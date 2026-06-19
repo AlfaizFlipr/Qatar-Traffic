@@ -1,0 +1,125 @@
+.header {
+  position: sticky;
+  top: 0;
+  z-index: 1000;
+  padding-top: 18px;
+  transition: padding-top 0.25s ease;
+
+  &.scrolled {
+    padding-top: 8px;
+  }
+}
+
+.bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  background: rgba(255, 255, 255, 0.78);
+  border: 1px solid rgba(138, 21, 56, 0.1);
+  box-shadow: 0 10px 30px rgba(18, 15, 28, 0.06);
+  backdrop-filter: blur(18px);
+  -webkit-backdrop-filter: blur(18px);
+  border-radius: 999px;
+  padding: 8px 12px 8px 18px;
+  transition: box-shadow 0.25s ease, background 0.25s ease;
+
+  [dir='rtl'] & {
+    padding: 8px 18px 8px 12px;
+  }
+
+  .scrolled & {
+    box-shadow: 0 16px 40px rgba(18, 15, 28, 0.12);
+    background: rgba(255, 255, 255, 0.92);
+  }
+}
+
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  text-decoration: none;
+  flex-shrink: 0;
+}
+
+.logoBox {
+  width: 42px;
+  height: 42px;
+  display: grid;
+  place-items: center;
+  flex-shrink: 0;
+}
+
+.logo {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+
+.brandText {
+  display: flex;
+  flex-direction: column;
+  line-height: 1.15;
+}
+
+.brandTitle {
+  font-weight: 800;
+  font-size: 14px;
+  color: #1c1410;
+  white-space: nowrap;
+}
+
+.brandSub {
+  font-size: 11px;
+  color: #8a8178;
+  white-space: nowrap;
+}
+
+.links {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+
+  @media (max-width: 768px) {
+    display: none;
+  }
+}
+
+.link {
+  position: relative;
+  padding: 8px 14px;
+  font-size: 13.5px;
+  font-weight: 600;
+  color: #5b5249;
+  text-decoration: none;
+  border-radius: 999px;
+  transition: color 0.15s ease, background 0.15s ease;
+
+  &:hover {
+    color: #8a1538;
+    background: rgba(138, 21, 56, 0.06);
+  }
+}
+
+.actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-shrink: 0;
+}
+
+.cta {
+  display: none;
+
+  @media (min-width: 769px) {
+    display: inline-flex;
+  }
+}
+
+.menuBtn {
+  display: inline-flex;
+
+  @media (min-width: 769px) {
+    display: none;
+  }
+}

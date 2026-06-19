@@ -1,0 +1,30 @@
+.section {
+  padding: 5rem 0;
+}
+
+.grid {
+  margin-top: 2rem;
+}
+
+.card {
+  background: linear-gradient(180deg, #fff, #fbf8f7);
+  border: 1px solid #efe6ea;
+  transition: transform 0.25s ease, box-shadow 0.25s ease;
+  padding: 1.4rem;
+}
+
+.card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 18px 40px rgba(18, 15, 28, 0.08);
+}
+
+.iconWrap {
+  width: 52px;
+  height: 52px;
+  display: grid;
+  place-items: center;
+  border-radius: 16px;
+  background: linear-gradient(135deg, #fbe9ed, #fff);
+  color: #8a1538;
+  margin-bottom: 0.9rem;
+}

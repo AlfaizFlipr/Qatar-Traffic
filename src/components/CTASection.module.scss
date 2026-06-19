@@ -1,0 +1,26 @@
+.section {
+  padding: 1rem 0 5rem;
+}
+
+.paper {
+  background: linear-gradient(90deg, #8a1538, #a2294d);
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 2rem;
+  border-radius: 28px;
+}
+
+.button {
+  background: white;
+  color: #8a1538;
+}
+
+@media (max-width: 768px) {
+  .paper {
+    flex-direction: column;
+    text-align: center;
+  }
+}
