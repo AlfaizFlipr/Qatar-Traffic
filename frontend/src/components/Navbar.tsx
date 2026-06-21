@@ -68,7 +68,7 @@ export function Navbar() {
         opened={opened}
         onClose={close}
         position={isArabic ? "right" : "left"}
-        size="30%"
+        size="min(85vw, 320px)"
         title={t.nav.services}
         padding={30}
         classNames={{

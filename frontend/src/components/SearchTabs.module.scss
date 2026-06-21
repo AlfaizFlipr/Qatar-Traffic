@@ -248,3 +248,52 @@ $panel-blue: #e8eef7;
   color: #6b7280;
   flex-wrap: wrap;
 }
+
+/* ── Responsive ── */
+@media (max-width: 768px) {
+  .section {
+    padding: 1.5rem 0 2.5rem;
+  }
+  .cardHeader {
+    padding: 14px 16px;
+    font-size: 0.98rem;
+  }
+  .panelTitle {
+    padding: 10px 16px;
+    font-size: 0.95rem;
+  }
+  .body {
+    padding: 18px 14px 22px;
+  }
+  .tab {
+    padding: 14px 4px;
+    gap: 6px;
+    font-size: 0.8rem;
+  }
+  .tab svg {
+    width: 22px;
+    height: 22px;
+  }
+  .totalCard {
+    min-width: 0;
+    width: 100%;
+    text-align: start;
+  }
+  .resultHeader {
+    padding: 1rem;
+  }
+  .resultCard {
+    padding: 1rem;
+  }
+}
+
+@media (max-width: 380px) {
+  .tab {
+    font-size: 0.72rem;
+    padding: 12px 2px;
+  }
+  .captchaBox {
+    letter-spacing: 4px;
+    padding: 6px 12px;
+  }
+}

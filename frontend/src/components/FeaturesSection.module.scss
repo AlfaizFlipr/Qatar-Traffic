@@ -1,5 +1,9 @@
 .section {
   padding: 5rem 0;
+
+  @media (max-width: 768px) {
+    padding: 3rem 0;
+  }
 }
 
 .grid {
@@ -24,7 +28,7 @@
   display: grid;
   place-items: center;
   border-radius: 16px;
-  background: linear-gradient(135deg, #fbe9ed, #fff);
+  background: linear-gradient(135deg, #e8eef7, #fff);
   color: #16294e;
   margin-bottom: 0.9rem;
 }
