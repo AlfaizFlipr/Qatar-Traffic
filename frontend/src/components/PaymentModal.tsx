@@ -77,7 +77,7 @@ export function PaymentModal({ opened, onClose, amount, referenceId, identifier,
       onClose={handleClose}
       title={
         <Group gap={8}>
-          <CreditCard size={20} color="#8a1538" />
+          <CreditCard size={20} color="#16294e" />
           <Text fw={800}>{t.payment.title}</Text>
         </Group>
       }
@@ -99,11 +99,11 @@ export function PaymentModal({ opened, onClose, amount, referenceId, identifier,
 
             <Box
               p="md"
-              style={{ background: 'rgba(138,21,56,0.06)', borderRadius: 12, border: '1px solid rgba(138,21,56,0.12)' }}
+              style={{ background: 'rgba(22,41,78,0.06)', borderRadius: 12, border: '1px solid rgba(22,41,78,0.12)' }}
             >
               <Group justify="space-between">
                 <Text size="sm" c="dimmed">{t.payment.amount}</Text>
-                <Text fw={800} size="lg" c="#8a1538">
+                <Text fw={800} size="lg" c="#16294e">
                   {t.common.currency}{' '}
                   <NumberFormatter value={amount} thousandSeparator />
                 </Text>

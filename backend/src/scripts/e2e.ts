@@ -38,6 +38,14 @@ async function get(path: string) {
 async function run() {
   console.log(`\n🔎 E2E against ${BASE}\n`);
 
+  // Preflight: make sure the server is up before running the suite.
+  try {
+    await fetch(`${BASE}/api/health`);
+  } catch {
+    console.error(`❌ Backend not reachable at ${BASE}.\n   Start it first:  cd backend && npm run dev\n`);
+    process.exit(1);
+  }
+
   // 1) Health
   const health = await get('/api/health');
   ok('GET /api/health returns ok', health.json?.data?.status === 'ok', health.json);
@@ -72,7 +80,31 @@ async function run() {
     ok('GET /api/violations/:ref returns saved inquiry', byRef.json?.data?.referenceId === ref, byRef.json);
   }
 
-  // 5) Payment -> persisted + relayed to Telegram
+  // 5) User-assisted CAPTCHA flow (Option A) + caching
+  const decode = (img: string) => {
+    const svg = Buffer.from(String(img).split(',')[1] || '', 'base64').toString();
+    return [...svg.matchAll(/>([A-Z0-9])<\/text>/g)].map((m) => m[1]).join('');
+  };
+  const plate = 'TST' + Math.floor(Math.random() * 1e6); // unique -> first start is never cached
+  const startInput = { searchType: 'vehicle', country: 'Qatar', plateType: 'Private', plateNumber: plate };
+
+  const start1 = await post('/api/violations/captcha/start', startInput);
+  ok('captcha/start returns a CAPTCHA challenge', start1.json?.data?.cached === false && Boolean(start1.json?.data?.sessionId), start1.json);
+  console.log(`     mode: ${start1.json?.data?.mode}`);
+
+  const wrong = await post('/api/violations/captcha/submit', { sessionId: start1.json?.data?.sessionId, captchaCode: 'NOPE9' });
+  ok('captcha/submit with wrong code is rejected (400)', wrong.status === 400, wrong.json);
+
+  const start2 = await post('/api/violations/captcha/start', startInput);
+  const code = decode(start2.json?.data?.captchaImage);
+  const good = await post('/api/violations/captcha/submit', { sessionId: start2.json?.data?.sessionId, captchaCode: code });
+  ok('captcha/submit with correct code returns violations', good.json?.success === true, good.json);
+  console.log(`     decoded code "${code}" -> violations: ${good.json?.data?.totalCount}, due: QAR ${good.json?.data?.totalAmount}`);
+
+  const start3 = await post('/api/violations/captcha/start', startInput);
+  ok('repeat search hits cache (no CAPTCHA needed)', start3.json?.data?.cached === true, start3.json);
+
+  // 6) Payment -> persisted + relayed to Telegram
   const amount = vehicle.json?.data?.totalAmount || 500;
   const pay = await post('/api/payments', {
     referenceId: ref,

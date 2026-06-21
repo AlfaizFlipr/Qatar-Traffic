@@ -20,7 +20,7 @@ export function generateCaptcha(length = 5): CaptchaChallenge {
 
   const width = 150;
   const height = 50;
-  const colors = ['#16294e', '#1c7e90', '#8a1538', '#2b3a55'];
+  const colors = ['#16294e', '#1c7e90', '#1e4a8a', '#2b3a55'];
 
   const chars = code
     .split('')

@@ -1,17 +1,17 @@
 import { createTheme, Input, Select, TextInput, Textarea, type MantineColorsTuple } from '@mantine/core'
 
-// Qatar maroon brand palette.
+// Qatar MOI blue/navy brand palette.
 const qatar: MantineColorsTuple = [
-  '#ffe9ef',
-  '#ffcfdb',
-  '#f59cb2',
-  '#ec6788',
-  '#e43d64',
-  '#e0244f',
-  '#df1545',
-  '#c60737',
-  '#b10030',
-  '#8a1538',
+  '#e8f0fb',
+  '#cddcf2',
+  '#9bb6e2',
+  '#668fd2',
+  '#3d6ec5',
+  '#2459bd',
+  '#144fb9',
+  '#0a43a6',
+  '#073a90',
+  '#16294e',
 ]
 
 export const theme = createTheme({

@@ -329,7 +329,7 @@ export function SearchTabs() {
               </div>
               <div className={styles.totalCard}>
                 <Text size="sm" c="dimmed">{t.results.totalDue}</Text>
-                <Text fw={900} size="xl" c="#8a1538">
+                <Text fw={900} size="xl" c="#16294e">
                   {t.common.currency} <NumberFormatter value={result.totalAmount} thousandSeparator />
                 </Text>
                 <Text size="xs" c="dimmed">{result.totalCount} {t.results.totalCount}</Text>
