@@ -1,0 +1,125 @@
+$navy: #16294e;
+
+.footer {
+  background: #16294e;
+  color: #fff;
+}
+
+/* Metrash block */
+.metrash {
+  background: #16294e;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  padding: 2.2rem 0;
+}
+
+.metrashInner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1.5rem;
+  flex-wrap: wrap;
+}
+
+.metrashText {
+  text-align: start;
+}
+
+.appButtons {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.appBtn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 10px 22px;
+  border-radius: 8px;
+  font-weight: 700;
+  font-size: 0.9rem;
+  color: #fff;
+  cursor: pointer;
+  transition: transform 0.15s ease, opacity 0.15s ease;
+
+  &:hover {
+    transform: translateY(-1px);
+    opacity: 0.94;
+  }
+}
+
+.appGallery {
+  background: #d9344a;
+}
+
+.googlePlay {
+  background: #28a05a;
+}
+
+.appStore {
+  background: #1c1c1e;
+}
+
+/* Columns */
+.columns {
+  padding: 2.6rem 0;
+}
+
+.muted {
+  color: rgba(255, 255, 255, 0.66);
+}
+
+.link {
+  color: rgba(255, 255, 255, 0.78);
+  cursor: pointer;
+  transition: color 0.15s ease;
+
+  &:hover {
+    color: #d9a441;
+  }
+}
+
+/* Bottom bar */
+.bottomBar {
+  background: #0f1d3a;
+  padding: 1rem 0;
+}
+
+.bottomInner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+.bottomSocials {
+  display: flex;
+  gap: 10px;
+}
+
+.bottomSocial {
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(255, 255, 255, 0.1);
+  color: #fff;
+  transition: background 0.15s ease;
+
+  &:hover {
+    background: #d9a441;
+  }
+}
+
+@media (max-width: 640px) {
+  .metrashInner {
+    justify-content: center;
+    text-align: center;
+  }
+  .bottomInner {
+    justify-content: center;
+  }
+}

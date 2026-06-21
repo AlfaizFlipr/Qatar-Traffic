@@ -1,0 +1,135 @@
+@import '../styles/variables.scss';
+
+$navy: #16294e;
+
+.header {
+  position: sticky;
+  top: 0;
+  z-index: 200;
+  background: #ffffff;
+  box-shadow: 0 2px 12px rgba(16, 24, 40, 0.06);
+}
+
+/* ── Teal social strip ── */
+.topbar {
+  background: linear-gradient(180deg, #1c7e90 0%, #14687a 100%);
+}
+
+.topbarInner {
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  min-height: 46px;
+}
+
+.socials {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+}
+
+.socialLink {
+  color: rgba(255, 255, 255, 0.9);
+  display: inline-flex;
+  transition: color 0.15s ease, transform 0.15s ease;
+
+  &:hover {
+    color: #fff;
+    transform: translateY(-1px);
+  }
+}
+
+/* ── Main header row ── */
+.mainRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  min-height: 92px;
+}
+
+.brand {
+  display: inline-flex;
+  align-items: center;
+  flex-shrink: 1;
+  min-width: 0;
+}
+
+.logo {
+  height: 60px;
+  width: auto;
+  max-width: 100%;
+  object-fit: contain;
+  display: block;
+}
+
+.actions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-shrink: 0;
+}
+
+.langBtn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: #fff;
+  border: 1px solid #d7dbe0;
+  border-radius: 10px;
+  padding: 9px 16px;
+  font-size: 15px;
+  font-weight: 700;
+  color: $navy;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease, background 0.15s ease;
+
+  &:hover {
+    border-color: #1c7e90;
+    background: #f5fbfc;
+    box-shadow: 0 4px 12px rgba(20, 104, 122, 0.12);
+  }
+}
+
+/* ── Drawer ── */
+.drawerTitle {
+  font-weight: 800;
+  color: $navy;
+}
+
+.drawerLink {
+  padding: 12px 14px;
+  font-weight: 600;
+  color: #3c4150;
+  border-radius: 10px;
+  text-decoration: none;
+  transition: background 0.15s ease, color 0.15s ease;
+
+  &:hover {
+    background: rgba(20, 41, 78, 0.06);
+    color: $navy;
+  }
+
+  &.active {
+    color: #fff;
+    background: $navy;
+  }
+}
+
+@media (max-width: 768px) {
+  .mainRow {
+    min-height: 72px;
+  }
+  .logo {
+    height: 42px;
+    max-width: 56vw;
+  }
+  .langBtn {
+    padding: 8px 12px;
+    font-size: 13.5px;
+  }
+  .langBtn span {
+    display: none;
+  }
+}

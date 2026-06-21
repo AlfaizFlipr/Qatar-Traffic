@@ -1,0 +1,41 @@
+@import './variables.scss';
+
+* {
+  box-sizing: border-box;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  margin: 0;
+  font-family: Inter, 'Segoe UI', 'Noto Kufi Arabic', Tahoma, Roboto, Helvetica, Arial, sans-serif;
+  background: #f4f6f8;
+  color: $text;
+}
+
+button,
+input,
+select,
+textarea {
+  font: inherit;
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+img {
+  max-width: 100%;
+  display: block;
+}
+
+#root {
+  min-height: 100vh;
+}
+
+::selection {
+  background: rgba(138, 21, 56, 0.15);
+}

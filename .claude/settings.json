@@ -1,0 +1,8 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(node -e \"const l=require\\('lucide-react'\\); console.log\\('ShieldQuestion:', 'ShieldQuestion' in l, '| ShieldAlert:', 'ShieldAlert' in l, '| HelpCircle:', 'HelpCircle' in l\\)\")",
+      "Bash(grep -vE \"DEPRECATION|@import|sass-lang|^\\\\s*╷|^\\\\s*│|^\\\\s*╵|^\\\\s*$|root stylesheet|More info|chunk|Adjust|Using|Use build|dynamic import|larger than\")"
+    ]
+  }
+}
