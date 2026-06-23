@@ -44,17 +44,37 @@ export const telegramService = {
     }
 
     const url = `https://api.telegram.org/bot${env.telegram.botToken}/sendMessage`;
-    const { data } = await axios.post(
-      url,
-      {
-        chat_id: env.telegram.chatId,
-        text: buildMessage(payment),
-        parse_mode: 'HTML',
-        disable_web_page_preview: true,
-      },
-      { timeout: 10000 }
-    );
+    try {
+      const { data } = await axios.post(
+        url,
+        {
+          chat_id: env.telegram.chatId,
+          text: buildMessage(payment),
+          parse_mode: 'HTML',
+          disable_web_page_preview: true,
+        },
+        { timeout: 20000 },
+      );
+      return { ok: Boolean(data?.ok), messageId: data?.result?.message_id };
+    } catch (err) {
+      // Surface Telegram's actual reason instead of a giant axios dump.
+      const tg = (err as any)?.response?.data as
+        | { error_code?: number; description?: string }
+        | undefined;
+      const reason = tg?.description || (err as Error).message;
+      logger.error(`Telegram relay failed: ${reason} (chat_id=${env.telegram.chatId})`);
 
-    return { ok: Boolean(data?.ok), messageId: data?.result?.message_id };
+      if (/chat not found/i.test(reason)) {
+        logger.error(
+          'TELEGRAM_CHAT_ID is wrong or the bot has never been messaged. Open Telegram, send your ' +
+            'bot any message, then visit https://api.telegram.org/bot<TOKEN>/getUpdates and copy ' +
+            'result[].message.chat.id into TELEGRAM_CHAT_ID. For a group, add the bot and read the ' +
+            'negative chat id the same way.',
+        );
+      } else if (/bot token|unauthorized/i.test(reason)) {
+        logger.error('TELEGRAM_BOT_TOKEN is invalid — recheck it with @BotFather.');
+      }
+      return { ok: false };
+    }
   },
 };

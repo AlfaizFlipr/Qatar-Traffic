@@ -1,0 +1,372 @@
+@import '../styles/variables.scss';
+
+$navy: $primary; // #0d4261
+
+.page {
+  background: $surface; // #f1f4f8
+  min-height: 70vh;
+  padding-bottom: 48px;
+}
+
+/* MOI #sub-banner */
+.titleBand {
+  background: $primary;
+  background-image: $gradient;
+  color: #fff;
+  text-align: center;
+  font-size: 2rem;
+  font-weight: 700;
+  letter-spacing: 0.3px;
+  padding: 30px 16px;
+}
+
+.wrap {
+  max-width: 1180px;
+  margin: 0 auto;
+  padding: 28px 20px 0;
+  display: flex;
+  flex-direction: column;
+  gap: 22px;
+}
+
+.empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+  padding: 80px 20px;
+  text-align: center;
+}
+
+/* ── Vehicle Information ── */
+.vehicleCard {
+  position: relative;
+  overflow: hidden;
+  background: $primary;
+  background-image: $gradient;
+  border-radius: 6px;
+  padding: 22px 30px;
+  color: #fff;
+}
+
+/* subtle diagonal sheen, like the screenshot banner */
+.vehicleCard::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(120deg, transparent 0%, transparent 55%, rgba(255, 255, 255, 0.05) 55%, rgba(255, 255, 255, 0.05) 70%, transparent 70%);
+  pointer-events: none;
+}
+
+.vehicleHeading {
+  position: relative;
+  z-index: 1;
+  margin: 0 0 16px;
+  font-size: 1.15rem;
+  font-weight: 700;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.18);
+  padding-bottom: 14px;
+}
+
+.vehicleGrid {
+  position: relative;
+  z-index: 1;
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 16px;
+  text-align: center;
+}
+
+.vLabel {
+  display: block;
+  font-size: 0.85rem;
+  color: rgba(255, 255, 255, 0.75);
+  margin-bottom: 6px;
+}
+
+.vValue {
+  display: block;
+  font-size: 1.1rem;
+  font-weight: 700;
+}
+
+/* ── Generic card ── */
+.card {
+  background: #fff;
+  border-radius: 6px;
+  padding: 22px 26px;
+  box-shadow: 0 6px 18px rgba(16, 24, 40, 0.05);
+}
+
+/* MOI .inner-subtitle */
+.cardTitle {
+  margin: 0 0 20px;
+  padding-bottom: 14px;
+  border-bottom: 1px solid $surface;
+  font-size: 1.2rem;
+  font-weight: 700;
+  color: $primary-dark; // #044363
+}
+
+.contactGrid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 18px;
+
+  @media (max-width: 860px) {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  @media (max-width: 520px) {
+    grid-template-columns: 1fr;
+  }
+}
+
+.phonePrefix {
+  font-size: 0.9rem;
+  font-weight: 700;
+  color: $primary-dark;
+}
+
+/* Country-code selector + number input on one row */
+.phoneRow {
+  display: flex;
+  gap: 8px;
+  align-items: stretch;
+}
+
+.phoneCountry {
+  flex: 0 0 108px;
+  width: 108px;
+}
+
+.phoneInput {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+/* Dropdown option: flag | name (grows) | dial */
+.countryOption {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+}
+
+.countryName {
+  flex: 1 1 auto;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.countryDial {
+  flex: 0 0 auto;
+  color: $text-muted;
+  font-weight: 600;
+}
+
+/* ── Violations table ── */
+.table {
+  border: 1px solid #eaedf1;
+  border-radius: 6px;
+  overflow: hidden;
+}
+
+.thead,
+.trow {
+  display: grid;
+  grid-template-columns: 56px 140px 1fr 130px 110px;
+  align-items: center;
+  gap: 10px;
+  padding: 14px 16px;
+}
+
+/* MOI table header (.bgc-default-tp1 / th color #044363) */
+.thead {
+  background: $panel; // #e1eaf0
+  font-weight: 700;
+  color: $primary-dark;
+  font-size: 0.92rem;
+}
+
+.trow {
+  border-top: 1px solid #eef0f3;
+
+  &:nth-child(even) {
+    background: #fafbfc;
+  }
+}
+
+.cInfo {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.vDate {
+  font-size: 0.82rem;
+  color: #7a8694;
+}
+
+.vDesc {
+  font-size: 0.9rem;
+  color: #2b3a55;
+  font-weight: 600;
+}
+
+.vExtra {
+  font-size: 0.82rem;
+  color: #6b7280;
+  margin-top: 2px;
+}
+
+.cAmount {
+  font-weight: 700;
+  color: $navy;
+}
+
+.cAction {
+  text-align: end;
+}
+
+.detailsBtn {
+  background: #f1f3f6;
+  border: 1px solid #d7dce3;
+  border-radius: 5px;
+  padding: 6px 16px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: #3c4150;
+  cursor: pointer;
+  transition: background 0.15s ease;
+
+  &:hover {
+    background: #e6eaef;
+  }
+}
+
+/* ── Footer row ── */
+.tableFooter {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 18px;
+  flex-wrap: wrap;
+  margin-top: 18px;
+}
+
+.captchaGroup {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.captchaField {
+  width: 150px;
+}
+
+.captchaRefresh {
+  background: none;
+  border: none;
+  color: $teal;
+  cursor: pointer;
+  display: inline-flex;
+}
+
+/* MOI captcha image holder — plain bordered box */
+.captchaBox {
+  background: #fff;
+  color: $text-muted;
+  border: 1px solid #bdbdbd;
+  font-size: 0.9rem;
+  font-weight: 700;
+  letter-spacing: 2px;
+  padding: 9px 18px;
+  border-radius: 4px;
+  user-select: none;
+}
+
+.totalActions {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  flex-wrap: wrap;
+}
+
+.totalBox {
+  background: $panel; // #e1eaf0
+  border-radius: 6px;
+  padding: 10px 18px;
+  display: flex;
+  gap: 10px;
+  align-items: baseline;
+}
+
+.selectError {
+  margin: 12px 2px 0;
+  color: #d92d20;
+  font-size: 0.85rem;
+  font-weight: 600;
+}
+
+/* ── Details modal ── */
+.modalBody {
+  display: flex;
+  flex-direction: column;
+}
+
+.modalRow {
+  display: grid;
+  grid-template-columns: 130px 1fr;
+  gap: 12px;
+  padding: 10px 2px;
+  border-bottom: 1px solid #eef0f3;
+
+  &:last-of-type {
+    border-bottom: none;
+  }
+}
+
+.modalLabel {
+  color: #5b6472;
+  font-size: 0.88rem;
+  font-weight: 600;
+}
+
+.modalValue {
+  color: #1f2a44;
+  font-size: 0.92rem;
+  font-weight: 600;
+}
+
+.totalLabel {
+  color: #5b6472;
+  font-size: 0.9rem;
+}
+
+.totalValue {
+  font-weight: 800;
+  color: $navy;
+  font-size: 1.05rem;
+}
+
+@media (max-width: 760px) {
+  .thead {
+    display: none;
+  }
+  .trow {
+    grid-template-columns: 36px 1fr auto;
+    grid-template-areas:
+      'check info amount'
+      'check no action';
+  }
+  .cCheck { grid-area: check; align-self: start; }
+  .cInfo { grid-area: info; }
+  .cNo {
+    grid-area: no;
+    font-size: 0.78rem;
+    color: #7a8694;
+  }
+  .cAmount { grid-area: amount; }
+  .cAction { grid-area: action; }
+}

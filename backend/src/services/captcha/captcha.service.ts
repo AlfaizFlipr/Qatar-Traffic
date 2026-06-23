@@ -14,7 +14,7 @@ const CACHE_TTL_MS = Number(process.env.CACHE_TTL_MS || 10 * 60 * 1000);
 const resultCache = new TTLCache<ViolationSearchResult>(CACHE_TTL_MS);
 
 function mode(): SessionMode {
-  return process.env.SCRAPER_MODE === 'live' ? 'live' : 'simulated';
+  return env.violation.scraperMode === 'live' ? 'live' : 'simulated';
 }
 
 function identifierOf(input: ViolationSearchInput): string {
@@ -26,7 +26,6 @@ export type StartResponse =
   | { cached: false; captchaRequired: true; sessionId: string; captchaImage: string; mode: SessionMode };
 
 export const captchaService = {
-  /** Step 1 — check cache; otherwise open a session and return a CAPTCHA challenge. */
   async start(input: ViolationSearchInput): Promise<StartResponse> {
     const identifier = identifierOf(input);
 
@@ -40,8 +39,8 @@ export const captchaService = {
     const currentMode = mode();
 
     if (currentMode === 'live') {
-      const { browser, page, captchaImage } = await openAndCaptureCaptcha(input);
-      sessionStore.create({ id, mode: 'live', identifier, input, browser, page });
+      const { context, page, captchaImage, formContext } = await openAndCaptureCaptcha(input);
+      sessionStore.create({ id, mode: 'live', identifier, input, context, page, formContext });
       return { cached: false, captchaRequired: true, sessionId: id, captchaImage, mode: 'live' };
     }
 
@@ -61,7 +60,7 @@ export const captchaService = {
 
     try {
       if (session.mode === 'live') {
-        result = await submitAndParse(session.page, session.input, code);
+        result = await submitAndParse(session.page, session.input, code, session.formContext);
       } else {
         if (code.toUpperCase() !== (session.expectedCode ?? '').toUpperCase()) {
           throw new AppError('Verification code incorrect.', 400);

@@ -1,125 +1,130 @@
-$navy: #16294e;
+@import '../styles/variables.scss';
 
+/* MOI footer: navy gradient, all text muted #ddd */
 .footer {
-  background: #16294e;
-  color: #fff;
+  position: relative;
+  z-index: 1; // paints OVER the Metrash phone, hiding its lower ~20%
+  background: $primary; // #0d4261
+  background-image: $gradient;
+  color: #ddd;
 }
 
-/* Metrash block */
-.metrash {
-  background: #16294e;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
-  padding: 2.2rem 0;
+/* MOI .top-footer.bg-gold — teal bar with thick navy top border */
+.keepBar {
+  background: $teal; // #0b8992
+  border-top: 10px solid $primary; // #0d4261
 }
 
-.metrashInner {
+.keepInner {
   display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 1.5rem;
-  flex-wrap: wrap;
-}
-
-.metrashText {
-  text-align: start;
-}
-
-.appButtons {
-  display: flex;
-  gap: 12px;
-  flex-wrap: wrap;
-}
-
-.appBtn {
-  display: inline-flex;
   align-items: center;
   justify-content: center;
-  padding: 10px 22px;
-  border-radius: 8px;
+  gap: 18px;
+  min-height: 54px;
+}
+
+.keepLabel {
   font-weight: 700;
-  font-size: 0.9rem;
+  font-size: 0.98rem;
   color: #fff;
-  cursor: pointer;
-  transition: transform 0.15s ease, opacity 0.15s ease;
-
-  &:hover {
-    transform: translateY(-1px);
-    opacity: 0.94;
-  }
 }
 
-.appGallery {
-  background: #d9344a;
-}
-
-.googlePlay {
-  background: #28a05a;
-}
-
-.appStore {
-  background: #1c1c1e;
-}
-
-/* Columns */
-.columns {
-  padding: 2.6rem 0;
-}
-
-.muted {
-  color: rgba(255, 255, 255, 0.66);
-}
-
-.link {
-  color: rgba(255, 255, 255, 0.78);
-  cursor: pointer;
-  transition: color 0.15s ease;
-
-  &:hover {
-    color: #d9a441;
-  }
-}
-
-/* Bottom bar */
-.bottomBar {
-  background: #0f1d3a;
-  padding: 1rem 0;
-}
-
-.bottomInner {
+.keepSocials {
   display: flex;
   align-items: center;
-  justify-content: space-between;
-  gap: 1rem;
-  flex-wrap: wrap;
+  gap: 16px;
 }
 
-.bottomSocials {
+.keepSocial {
+  color: rgba(255, 255, 255, 0.92);
+  display: inline-flex;
+  transition: transform 0.15s ease;
+
+  &:hover {
+    transform: translateY(-2px);
+    color: #fff;
+  }
+}
+
+/* ── Columns ── */
+.columns {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 32px;
+  padding-top: 46px;
+  padding-bottom: 46px;
+}
+
+.col {
   display: flex;
+  flex-direction: column;
   gap: 10px;
 }
 
-.bottomSocial {
-  width: 30px;
-  height: 30px;
-  border-radius: 50%;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  background: rgba(255, 255, 255, 0.1);
+.colTitle {
+  font-size: 1rem;
+  font-weight: 800;
   color: #fff;
-  transition: background 0.15s ease;
+  margin: 0 0 6px;
+}
+
+.muted {
+  color: rgba(255, 255, 255, 0.72);
+  font-size: 0.9rem;
+  margin: 0;
+  line-height: 1.6;
+}
+
+.link {
+  color: rgba(255, 255, 255, 0.82);
+  font-size: 0.9rem;
+  text-decoration: none;
+  transition: color 0.15s ease;
 
   &:hover {
-    background: #d9a441;
+    color: #fff;
   }
 }
 
-@media (max-width: 640px) {
-  .metrashInner {
-    justify-content: center;
-    text-align: center;
+.contactRow {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: rgba(255, 255, 255, 0.82);
+  font-size: 0.9rem;
+
+  svg {
+    flex-shrink: 0;
+    opacity: 0.85;
   }
-  .bottomInner {
-    justify-content: center;
+}
+
+/* ── Bottom bar ── */
+.bottomBar {
+  border-top: 1px solid rgba(255, 255, 255, 0.12);
+  padding: 18px 0;
+  text-align: center;
+}
+
+.copy {
+  color: rgba(255, 255, 255, 0.78);
+  font-size: 0.88rem;
+}
+
+@media (max-width: 900px) {
+  .columns {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 28px;
+  }
+}
+
+@media (max-width: 540px) {
+  .columns {
+    grid-template-columns: 1fr;
+  }
+  .keepInner {
+    flex-direction: column;
+    gap: 10px;
+    padding: 14px 0;
   }
 }

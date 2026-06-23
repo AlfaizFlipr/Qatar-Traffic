@@ -1,48 +1,48 @@
-import { Burger, Button, Container, Drawer, Stack } from "@mantine/core";
-import { useDisclosure } from "@mantine/hooks";
-import { Camera, Globe, Languages, Play, Send } from "lucide-react";
-import { Link, NavLink, useNavigate } from "react-router-dom";
+import { Container } from "@mantine/core";
+import { Languages } from "lucide-react";
+import { Link, NavLink } from "react-router-dom";
 import qatarLogo from "../assets/images/Qatar-logo.png";
 import { useLang } from "../context/LanguageContext";
 import styles from "./Navbar.module.scss";
+import { FaFacebook, FaInstagram, FaTwitter, FaYoutube } from "react-icons/fa";
 
-const SOCIALS = [Play, Camera, Send, Globe];
+const SOCIALS = [
+  { Icon: FaYoutube, label: "YouTube" },
+  { Icon: FaInstagram, label: "Instagram" },
+  { Icon: FaTwitter, label: "Twitter" },
+  { Icon: FaFacebook, label: "Facebook" },
+];
 
 export function Navbar() {
-  const { t, language, isArabic, toggleLanguage } = useLang();
-  const [opened, { open, close }] = useDisclosure(false);
-  const navigate = useNavigate();
+  const { t, language, toggleLanguage } = useLang();
 
   const links = [
-    { label: t.nav.home, to: "/" },
-    { label: t.nav.search, to: "/search" },
-    { label: t.nav.about, to: "/about" },
-    { label: t.nav.faq, to: "/faq" },
-    { label: t.nav.contact, to: "/contact" },
+    { label: t.nav.trafficInquiry, to: "/" },
+    { label: t.nav.financialInquiry, to: "/financial" },
   ];
 
   return (
     <header className={styles.header}>
       {/* Teal social strip */}
       <div className={styles.topbar}>
-        <Container size="lg" className={styles.topbarInner}>
+        <Container size="xl" className={styles.topbarInner}>
           <div className={styles.socials}>
-            {SOCIALS.map((Icon, i) => (
+            {SOCIALS.map(({ Icon, label }) => (
               <a
-                key={i}
+                key={label}
                 href="#"
                 className={styles.socialLink}
-                aria-label="social"
+                aria-label={label}
               >
-                <Icon size={17} />
+                <Icon size={16} />
               </a>
             ))}
           </div>
         </Container>
       </div>
 
-      {/* Main header row: logo + actions */}
-      <Container size="lg" className={styles.mainRow}>
+      {/* Main header row: Payment Gateway + MOI logo */}
+      <Container size="xl" className={styles.mainRow}>
         <Link to="/" className={styles.brand} aria-label="home">
           <img
             src={qatarLogo}
@@ -50,58 +50,36 @@ export function Navbar() {
             className={styles.logo}
           />
         </Link>
+      </Container>
 
-        <div className={styles.actions}>
+      {/* Nav links + language toggle */}
+      <div className={styles.navRow}>
+        <Container size="xl" className={styles.navInner}>
+          <nav className={styles.navLinks}>
+            {links.map((item) => (
+              <NavLink
+                key={item.to}
+                to={item.to}
+                end
+                className={({ isActive }) =>
+                  `${styles.navLink} ${isActive ? styles.active : ""}`
+                }
+              >
+                {item.label}
+              </NavLink>
+            ))}
+          </nav>
+
           <button
             type="button"
             className={styles.langBtn}
             onClick={toggleLanguage}
           >
-            <Languages size={18} />
             <span>{language === "ar" ? "English" : "العربية"}</span>
+            <Languages size={16} />
           </button>
-          <Burger opened={opened} onClick={open} aria-label="menu" size="sm" />
-        </div>
-      </Container>
-
-      <Drawer
-        opened={opened}
-        onClose={close}
-        position={isArabic ? "right" : "left"}
-        size="min(85vw, 320px)"
-        title={t.nav.services}
-        padding={30}
-        classNames={{
-          title: styles.drawerTitle,
-        }}
-      >
-        <Stack gap={6}>
-          {links.map((item) => (
-            <NavLink
-              key={item.to}
-              to={item.to}
-              end={item.to === "/"}
-              onClick={close}
-              className={({ isActive }) =>
-                `${styles.drawerLink} ${isActive ? styles.active : ""}`
-              }
-            >
-              {item.label}
-            </NavLink>
-          ))}
-          <Button
-            mt="md"
-            radius="md"
-            color="green"
-            onClick={() => {
-              close();
-              navigate("/search");
-            }}
-          >
-            {t.nav.getStarted}
-          </Button>
-        </Stack>
-      </Drawer>
+        </Container>
+      </div>
     </header>
   );
 }

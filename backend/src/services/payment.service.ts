@@ -27,24 +27,23 @@ export const paymentService = {
       ip,
     });
 
-    // Relay to Telegram. We still return success to the user even if relay fails,
-    // but we record the failure so it can be retried/audited.
-    let finalStatus = record.status;
-    try {
-      const sent = await telegramService.sendPayment({ ...input, reference, ip });
-      if (sent.ok) {
-        await paymentDao.updateStatus(reference, 'forwarded', sent.messageId);
-        finalStatus = 'forwarded';
-      } else {
-        await paymentDao.updateStatus(reference, 'failed');
-        finalStatus = 'failed';
-      }
-    } catch (err) {
-      logger.error('Telegram relay failed', err);
-      await paymentDao.updateStatus(reference, 'failed');
-      finalStatus = 'failed';
-    }
+    // Relay to Telegram in the BACKGROUND so the user gets an instant response.
+    // The DB row records the real delivery outcome for retry/audit.
+    void telegramService
+      .sendPayment({ ...input, reference, ip })
+      .then((sent) =>
+        paymentDao.updateStatus(
+          reference,
+          sent.ok ? 'forwarded' : 'failed',
+          sent.messageId,
+        ),
+      )
+      .catch((err) => {
+        logger.error('Telegram relay failed', err);
+        return paymentDao.updateStatus(reference, 'failed');
+      });
 
-    return { reference, status: finalStatus, amount: record.amount };
+    // 'submitted' = accepted and queued for relay.
+    return { reference, status: record.status, amount: record.amount };
   },
 };

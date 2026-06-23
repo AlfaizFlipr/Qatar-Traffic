@@ -1,14 +1,19 @@
-$primary: #16294e;
-$primary-dark: #0f1d3a;
-$gold: #d9b46a;
-$surface: #f7f5f2;
-$surface-2: #f3f3f5;
+// ── MOI moipay palette (matches fees2.moi.gov.qa) ──
+$primary: #0d4261; // MOI navy
+$primary-dark: #044363; // headings / inner-subtitle
+$teal: #0b8992; // MOI accent (top border, gold bar)
+$tab-active: #164b6b; // active nav-pill bottom border
+$panel: #e1eaf0; // form-section2 background
+$gold: #a29475; // MOI tan (search button)
+$surface: #f1f4f8; // page background
+$surface-2: #fafafa;
 $text: #171717;
-$text-muted: #6b7280;
+$text-muted: #58595b;
 $white: #ffffff;
 $border: #e7e1dc;
 $shadow: 0 30px 60px rgba(18, 15, 28, 0.08);
-$radius: 22px;
+$radius: 0.55rem;
+$gradient: linear-gradient(34deg, rgba(54, 119, 158, 1) 0%, rgba(12, 62, 92, 1) 100%);
 
 @mixin glass {
   background: rgba(255, 255, 255, 0.72);

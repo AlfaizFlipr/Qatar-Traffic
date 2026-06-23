@@ -1,9 +1,13 @@
+import { Hero } from '../components/Hero'
 import { SearchTabs } from '../components/SearchTabs'
+import { MetrashSection } from '../components/MetrashSection'
 
-/**
- * Minimal MOI-style landing: header + the inquiry card + footer only.
- * Secondary content (about, features, FAQ, contact) lives on dedicated pages.
- */
 export function LandingPage() {
-  return <SearchTabs />
+  return (
+    <>
+      <Hero />
+      <SearchTabs />
+      <MetrashSection />
+    </>
+  )
 }

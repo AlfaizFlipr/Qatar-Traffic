@@ -1,6 +1,6 @@
 @import '../styles/variables.scss';
 
-$navy: #16294e;
+$navy: $primary-dark; // #044363 (MOI heading navy)
 
 .header {
   position: sticky;
@@ -10,26 +10,26 @@ $navy: #16294e;
   box-shadow: 0 2px 12px rgba(16, 24, 40, 0.06);
 }
 
-/* ── Teal social strip ── */
+/* ── Top gradient strip (MOI .top-nav) ── */
 .topbar {
-  background: linear-gradient(180deg, #1c7e90 0%, #14687a 100%);
+  background: $gradient;
 }
 
 .topbarInner {
   display: flex;
   align-items: center;
   justify-content: flex-start;
-  min-height: 46px;
+  min-height: 40px;
 }
 
 .socials {
   display: flex;
   align-items: center;
-  gap: 20px;
+  gap: 18px;
 }
 
 .socialLink {
-  color: rgba(255, 255, 255, 0.9);
+  color: rgba(255, 255, 255, 0.92);
   display: inline-flex;
   transition: color 0.15s ease, transform 0.15s ease;
 
@@ -39,98 +39,162 @@ $navy: #16294e;
   }
 }
 
-/* ── Main header row ── */
+/* ── Main header row (MOI .mid-nav): logo on a light bar ── */
 .mainRow {
   display: flex;
   align-items: center;
-  justify-content: space-between;
-  gap: 16px;
-  min-height: 92px;
+  justify-content: flex-start;
+  min-height: 88px;
 }
 
+/* Keep payment-gateway → divider → logo in the same visual order in AR + EN */
 .brand {
-  display: inline-flex;
+  display: flex;
   align-items: center;
-  flex-shrink: 1;
-  min-width: 0;
+  gap: 18px;
+  direction: ltr;
+  text-decoration: none;
+}
+
+.gateway {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  text-align: end;
+  line-height: 1.25;
+}
+
+.gatewayAr {
+  font-size: 1.05rem;
+  font-weight: 800;
+  color: $navy;
+  letter-spacing: 1px;
+}
+
+.gatewayEn {
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: #5b6472;
+  letter-spacing: 0.5px;
+}
+
+.divider {
+  width: 1px;
+  height: 46px;
+  background: #d4d9e0;
 }
 
 .logo {
-  height: 60px;
+  height: 58px;
   width: auto;
   max-width: 100%;
   object-fit: contain;
   display: block;
 }
 
-.actions {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  flex-shrink: 0;
+/* ── Nav links row ── */
+.navRow {
+  border-top: 1px solid #eef0f3;
+  border-bottom: 1px solid #eef0f3;
+  background: #fff;
 }
 
+.navInner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  min-height: 52px;
+}
+
+.navLinks {
+  display: flex;
+  align-items: stretch;
+  gap: 28px;
+  height: 52px;
+}
+
+.navLink {
+  display: inline-flex;
+  align-items: center;
+  height: 52px;
+  font-size: 0.95rem;
+  font-weight: 500;
+  color: #0f4361; // MOI .navbar .nav-link
+  text-decoration: none;
+  border-bottom: 3px solid transparent;
+  transition: color 0.15s ease, border-color 0.15s ease;
+
+  &:hover {
+    color: $teal;
+  }
+
+  // MOI: .navbar-brand.selected { border-bottom: 3px solid #0b8992 }
+  &.active {
+    color: $primary-dark;
+    border-bottom-color: $teal;
+    font-weight: 700;
+  }
+}
+
+/* MOI language toggle: bordered rounded pill */
 .langBtn {
   display: inline-flex;
   align-items: center;
   gap: 8px;
   background: #fff;
   border: 1px solid #d7dbe0;
-  border-radius: 10px;
-  padding: 9px 16px;
-  font-size: 15px;
-  font-weight: 700;
-  color: $navy;
+  border-radius: 6px;
+  padding: 7px 14px;
+  font-size: 14px;
+  font-weight: 600;
+  color: #0f4361;
   cursor: pointer;
   white-space: nowrap;
-  transition: border-color 0.15s ease, box-shadow 0.15s ease, background 0.15s ease;
+  transition: border-color 0.15s ease, background 0.15s ease;
 
   &:hover {
-    border-color: #1c7e90;
-    background: #f5fbfc;
-    box-shadow: 0 4px 12px rgba(20, 104, 122, 0.12);
-  }
-}
-
-/* ── Drawer ── */
-
-.drawerTitle {
-  font-weight: 800;
-  color: $navy;
-}
-
-.drawerLink {
-  padding: 12px 14px;
-  font-weight: 600;
-  color: #3c4150;
-  border-radius: 10px;
-  text-decoration: none;
-  transition: background 0.15s ease, color 0.15s ease;
-
-  &:hover {
-    background: rgba(20, 41, 78, 0.06);
-    color: $navy;
-  }
-
-  &.active {
-    color: #fff;
-    background: $navy;
+    border-color: $teal;
+    background: #f0fbfc;
+    color: $teal;
   }
 }
 
 @media (max-width: 768px) {
   .mainRow {
-    min-height: 72px;
+    min-height: 68px;
   }
   .logo {
     height: 42px;
-    max-width: 56vw;
+  }
+  .gatewayAr {
+    font-size: 0.92rem;
+  }
+  .gatewayEn {
+    font-size: 0.68rem;
+  }
+  .navInner {
+    min-height: 46px;
+  }
+  .navLinks {
+    gap: 16px;
+    height: 46px;
+  }
+  .navLink {
+    height: 46px;
+    font-size: 0.8rem;
   }
   .langBtn {
-    padding: 8px 12px;
-    font-size: 13.5px;
+    padding: 6px 10px;
+    font-size: 12.5px;
   }
-  .langBtn span {
-    display: none;
+}
+
+@media (max-width: 480px) {
+  .navLink {
+    font-size: 0.72rem;
+  }
+  .socials {
+    gap: 14px;
   }
 }

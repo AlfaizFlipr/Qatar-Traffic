@@ -1,0 +1,128 @@
+.hero {
+  position: relative;
+  background-size: cover;
+  background-position: center center;
+  background-repeat: no-repeat;
+  min-height: 500px; // MOI .custom-overlay min-height
+  display: flex;
+  align-items: center;
+}
+
+/* MOI .custom-overlay gradient */
+.overlay {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    100deg,
+    rgba(0, 0, 0, 0.41) 0%,
+    rgba(12, 62, 92, 0) 100%
+  );
+}
+
+.inner {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 32px;
+  width: 100%;
+  padding-top: 40px;
+  padding-bottom: 40px;
+}
+
+/* Action cards — sit on the inline-start side */
+.cards {
+  display: flex;
+  gap: 18px;
+  flex-shrink: 0;
+}
+
+/* MOI .banner-stats .ban-inn — bordered box, transparent fill */
+.card {
+  width: 150px;
+  height: 150px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 14px;
+  background: transparent;
+  border: 2px solid #fff;
+  border-radius: 8px;
+  color: #fff;
+  font-size: 1.05rem;
+  font-weight: 600;
+  text-align: center;
+  cursor: pointer;
+  text-shadow: 1px 1px #000;
+  transition: background 0.18s ease, transform 0.18s ease;
+
+  &:hover {
+    background: rgba(255, 255, 255, 0.12);
+    transform: translateY(-3px);
+  }
+
+  svg {
+    filter: drop-shadow(1px 1px 0 #000);
+  }
+}
+
+/* Title block — inline-end side */
+.text {
+  text-align: end;
+  max-width: 620px;
+}
+
+.title {
+  color: #fff;
+  font-size: 4rem; // MOI #main-banner h1 (65px desktop)
+  font-weight: 700;
+  margin: 0 0 14px;
+  line-height: 1.15;
+  text-shadow: 1px 1px #000;
+}
+
+.subtitle {
+  color: #fff;
+  font-size: 1.5rem; // MOI .card-text 24px
+  line-height: 2.1rem;
+  font-weight: 500;
+  margin: 0;
+  text-shadow: 1px 1px #000;
+}
+
+@media (max-width: 900px) {
+  .inner {
+    flex-direction: column;
+    align-items: stretch;
+    text-align: center;
+  }
+  .cards {
+    justify-content: center;
+  }
+  .text {
+    text-align: center;
+    max-width: none;
+  }
+  .title {
+    font-size: 2rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .hero {
+    min-height: 340px;
+  }
+  .card {
+    width: 130px;
+    height: 130px;
+    font-size: 0.85rem;
+  }
+  .title {
+    font-size: 1.6rem;
+  }
+  .subtitle {
+    font-size: 0.95rem;
+  }
+}

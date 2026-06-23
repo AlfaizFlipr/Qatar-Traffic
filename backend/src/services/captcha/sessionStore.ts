@@ -10,8 +10,9 @@ export interface CaptchaSession {
   input: ViolationSearchInput;
   expiresAt: number;
   expectedCode?: string; // simulated mode
-  browser?: any; // live mode (Playwright Browser)
+  context?: any; // live mode (Playwright BrowserContext — closed on destroy)
   page?: any; // live mode (Playwright Page)
+  formContext?: string; // live mode: which form section (vehicle, personal, establishment)
 }
 
 const SESSION_TTL_MS = Number(process.env.CAPTCHA_TTL_MS || 3 * 60 * 1000);
@@ -44,11 +45,11 @@ class SessionStore {
     const s = this.sessions.get(id);
     if (!s) return;
     this.sessions.delete(id);
-    if (s.browser) {
+    if (s.context) {
       try {
-        await s.browser.close();
+        await s.context.close();
       } catch (err) {
-        logger.warn('Failed closing browser for session ' + id, err);
+        logger.warn('Failed closing context for session ' + id, err);
       }
     }
   }

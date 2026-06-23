@@ -4,7 +4,17 @@
       "Bash(node -e \"const l=require\\('lucide-react'\\); console.log\\('ShieldQuestion:', 'ShieldQuestion' in l, '| ShieldAlert:', 'ShieldAlert' in l, '| HelpCircle:', 'HelpCircle' in l\\)\")",
       "Bash(grep -vE \"DEPRECATION|@import|sass-lang|^\\\\s*╷|^\\\\s*│|^\\\\s*╵|^\\\\s*$|root stylesheet|More info|chunk|Adjust|Using|Use build|dynamic import|larger than\")",
       "Bash(grep -vE \"DEPRECATION|@import|sass-lang|^\\\\s*╷|^\\\\s*│|^\\\\s*╵|^\\\\s*$|root stylesheet|More info|chunk|Adjust|Using|Use build|dynamic import|larger than|builtin:vite\")",
-      "Bash(grep -vE \"DEPRECATION|@import|sass-lang|^\\\\s*╷|^\\\\s*│|^\\\\s*╵|^\\\\s*$|root stylesheet|More info|chunk|Adjust|Using|Use build|dynamic import|larger than|builtin:vite|PLUGIN_TIMINGS|vite:css|vite:asset|See https\")"
+      "Bash(grep -vE \"DEPRECATION|@import|sass-lang|^\\\\s*╷|^\\\\s*│|^\\\\s*╵|^\\\\s*$|root stylesheet|More info|chunk|Adjust|Using|Use build|dynamic import|larger than|builtin:vite|PLUGIN_TIMINGS|vite:css|vite:asset|See https\")",
+      "Bash(ls -R pages)",
+      "Bash(ls -R components)",
+      "Bash(cp /tmp/landing.png \"c:/Users/LENOVO/Music/Qatar/frontend/landing-preview.png\" && echo done)",
+      "Bash(\"/c/Program Files/Google/Chrome/Application/chrome.exe\" --headless=new --disable-gpu --hide-scrollbars --window-size=1440,2700 --screenshot=/tmp/landing2.png \"http://localhost:5191/\")",
+      "Bash(cp /tmp/landing2.png \"c:/Users/LENOVO/Music/Qatar/frontend/landing-preview.png\")",
+      "Bash(\"/c/Program Files/Google/Chrome/Application/chrome.exe\" --headless=new --disable-gpu --hide-scrollbars --window-size=1440,2400 --screenshot=/tmp/pay.png \"http://localhost:5191/pay?demo\")",
+      "Bash(cp /tmp/pay.png \"c:/Users/LENOVO/Music/Qatar/frontend/pay-preview.png\")"
+    ],
+    "additionalDirectories": [
+      "\\tmp"
     ]
   }
 }

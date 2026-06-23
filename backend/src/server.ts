@@ -15,6 +15,11 @@ async function bootstrap() {
   const server = app.listen(env.port, () => {
     logger.info(`API listening on http://localhost:${env.port} (${env.nodeEnv})`);
     logger.info(`Violation provider: ${env.violation.provider}`);
+    logger.info(`VPN integration: ${env.vpn.enabled ? 'ENABLED' : 'DISABLED'}`);
+    if (env.vpn.enabled) {
+      logger.info(`  - OpenVPN Binary: ${env.vpn.bin}`);
+      logger.info(`  - OpenVPN Config: ${env.vpn.config}`);
+    }
     if (!isTelegramConfigured) {
       logger.warn('Telegram is NOT configured — payment relays will be recorded as "failed".');
     }

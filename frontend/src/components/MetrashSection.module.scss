@@ -1,0 +1,231 @@
+@import '../styles/variables.scss';
+
+$navy: $primary-dark;
+
+.section {
+  position: relative;
+  z-index: 0;
+  background: $panel;
+  padding: 48px 0 0;
+  margin-top: 48px;
+  margin-bottom: -120px;
+  overflow: visible;
+}
+
+.inner {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 48px;
+}
+
+/* ── Phone mockup wrapper ── */
+.phoneWrap {
+  position: relative;
+  align-self: flex-start;
+  margin-top: -110px;
+  margin-bottom: -40px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-shrink: 0;
+}
+
+.navArrow {
+  background: none;
+  border: none;
+  color: #7a8694;
+  cursor: pointer;
+  display: inline-flex;
+  transition: color 0.15s ease;
+
+  &:hover {
+    color: $navy;
+  }
+}
+
+/* ── Phone frame ── */
+.phone {
+  position: relative;
+  width: 300px;
+  height: 612px;
+  background: #0f1115;
+  border-radius: 44px;
+  padding: 13px;
+  box-shadow: 0 26px 60px rgba(16, 24, 40, 0.32);
+  overflow: hidden;
+}
+
+.notch {
+  position: absolute;
+  top: 18px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 96px;
+  height: 24px;
+  background: #0f1115;
+  border-radius: 14px;
+  z-index: 2;
+  pointer-events: none;
+}
+
+/* ── Carousel: root wrapper ── */
+.carouselRoot {
+  width: 100%;
+  height: 100%;
+  border-radius: 30px;
+  overflow: hidden;
+  background: #0d3a52;
+  position: relative;
+}
+
+/*
+  FIX: Mantine renders a `data-carousel-viewport` div between root and
+  container. It must fill the root completely, otherwise the track has
+  no measured height and slides collapse.
+*/
+.carouselViewport {
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  border-radius: 30px;
+}
+
+/*
+  FIX: Mantine renders a `data-carousel-container` flex row for the
+  slide track. Explicitly enforce row direction and full height so
+  slides sit side-by-side horizontally rather than stacking vertically.
+*/
+.carouselContainer {
+  display: flex;
+  flex-direction: row;  /* ← the core fix: slides in a horizontal row */
+  height: 100%;
+  align-items: stretch;
+}
+
+/* ── Individual slide ── */
+.slide {
+  flex: 0 0 100%;       /* each slide = exactly 100% of viewport width */
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+
+  img {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    object-position: top;
+    display: block;
+  }
+}
+
+/* ── Content (left side) ── */
+.content {
+  flex: 1;
+  text-align: start;
+}
+
+.title {
+  color: $navy;
+  font-size: 3rem;
+  font-weight: 700;
+  margin: 0 0 14px;
+}
+
+.desc {
+  color: $primary-dark;
+  font-size: 1.3rem;
+  font-weight: 600;
+  margin: 0 0 8px;
+}
+
+.hint {
+  color: #5b6472;
+  font-size: 0.95rem;
+  margin: 0 0 24px;
+  max-width: 560px;
+}
+
+.stores {
+  display: flex;
+  gap: 20px;
+  flex-wrap: wrap;
+}
+
+.store {
+  background: #fff;
+  border: 1px solid #e1e6ec;
+  border-radius: 8px;
+  padding: 10px;
+  display: flex;
+  width: 120px;
+  transition: box-shadow 0.15s ease, transform 0.15s ease, border-color 0.15s ease;
+
+  &:hover {
+    border-color: $teal;
+    box-shadow: 0 8px 20px rgba(16, 24, 40, 0.12);
+    transform: translateY(-2px);
+  }
+}
+
+.storeImg {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+
+/* ── Tablet / stacked ── */
+@media (max-width: 900px) {
+  .section {
+    margin-bottom: 0;
+    padding-bottom: 48px;
+  }
+
+  .inner {
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+  }
+
+  .content {
+    text-align: center;
+  }
+
+  .hint {
+    margin-inline: auto;
+  }
+
+  .stores {
+    justify-content: center;
+  }
+
+  .phoneWrap {
+    align-self: center;
+    margin-top: 24px;
+    margin-bottom: 0;
+  }
+}
+
+/* ── Small phones ── */
+@media (max-width: 480px) {
+  .phone {
+    width: 220px;
+    height: 450px;
+    border-radius: 34px;
+  }
+
+  .navArrow svg {
+    width: 22px;
+    height: 22px;
+  }
+
+  .stores {
+    gap: 14px;
+  }
+
+  .store {
+    width: 104px;
+  }
+}
