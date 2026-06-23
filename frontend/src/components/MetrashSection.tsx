@@ -80,7 +80,7 @@ export function MetrashSection() {
             aria-label="previous"
             onClick={() => go(-1)}
           >
-            <ChevronLeft size={26} />
+            <ChevronRight size={26} />
           </button>
 
           <div className={styles.phone}>
@@ -123,7 +123,7 @@ export function MetrashSection() {
             aria-label="next"
             onClick={() => go(1)}
           >
-            <ChevronRight size={26} />
+            <ChevronLeft size={26} />
           </button>
         </div>
       </Container>
