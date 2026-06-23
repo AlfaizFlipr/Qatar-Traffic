@@ -17,7 +17,7 @@ function optional(key: string, fallback = ''): string {
 export const env = {
   nodeEnv: optional('NODE_ENV', 'development'),
   port: Number(optional('PORT', '5000')),
-  corsOrigins: optional('CORS_ORIGIN', 'http://localhost:5173,https://qatar-traffic.netlify.app,https://qatar-traffic-admin.netlify.app,https://plausible-rebate-outweigh.ngrok-free.dev')
+  corsOrigins: optional('CORS_ORIGIN', 'http://localhost:5173,https://qatar-traffic.netlify.app,https://qatar-traffic-admin.netlify.app')
     .split(',')
     .map((o) => o.trim())
     .filter(Boolean),
