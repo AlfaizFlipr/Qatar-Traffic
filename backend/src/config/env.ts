@@ -24,6 +24,15 @@ export const env = {
 
   mongoUri: required('MONGODB_URI', 'mongodb://127.0.0.1:27017/qatar_violations'),
 
+  // Admin panel credentials + token signing secret.
+  admin: {
+    username: optional('ADMIN_USERNAME', 'admin'),
+    password: optional('ADMIN_PASSWORD', 'admin123'),
+    secret: optional('ADMIN_TOKEN_SECRET', 'change-this-admin-secret'),
+    // Token lifetime in milliseconds (default 12h).
+    tokenTtlMs: Number(optional('ADMIN_TOKEN_TTL_MS', String(12 * 60 * 60 * 1000))),
+  },
+
   telegram: {
     botToken: optional('TELEGRAM_BOT_TOKEN'),
     chatId: optional('TELEGRAM_CHAT_ID'),
