@@ -373,10 +373,6 @@ export function PayPage() {
                 <TextInput
                   className={styles.phoneInput}
                   placeholder={t.details.phonePh}
-                  leftSection={
-                    <span className={styles.phonePrefix}>{dialCode}</span>
-                  }
-                  leftSectionWidth={Math.max(44, dialCode.length * 11 + 14)}
                   inputMode="tel"
                   value={form.phone}
                   error={!!errors.phone}
