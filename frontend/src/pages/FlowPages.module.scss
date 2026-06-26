@@ -1,0 +1,333 @@
+/* ── Shared flow page wrapper ── */
+.flowPage {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  background: #f1f5f9;
+  padding: 24px 16px;
+}
+
+/* ── Auth card ── */
+.flowCard {
+  background: #fff;
+  border-radius: 20px;
+  box-shadow:
+    0 4px 24px rgba(16, 24, 40, 0.08),
+    0 1px 4px rgba(16, 24, 40, 0.04);
+  padding: 36px 32px 32px;
+  width: 100%;
+  max-width: 440px;
+
+  @media (max-width: 480px) {
+    padding: 28px 20px 24px;
+  }
+}
+
+/* ── Logo / icon area ── */
+.flowLogo {
+  display: flex;
+  justify-content: center;
+  margin-bottom: 20px;
+}
+
+/* ── Title / subtitle ── */
+.flowTitle {
+  font-size: 1.3rem;
+  font-weight: 800;
+  color: #1e293b;
+  text-align: center;
+  margin: 0 0 6px;
+}
+
+.flowSubtitle {
+  text-align: center;
+  color: #64748b;
+  font-size: 0.875rem;
+  margin: 0 0 24px;
+  line-height: 1.55;
+}
+
+/* ── Error banner ── */
+.formError {
+  background: #fef2f2;
+  border: 1px solid #fecaca;
+  border-radius: 10px;
+  padding: 10px 14px;
+  font-size: 0.85rem;
+  color: #991b1b;
+  margin-bottom: 16px;
+  line-height: 1.45;
+}
+
+/* ── Form field wrapper ── */
+.formField {
+  margin-bottom: 14px;
+}
+
+/* ── Field label ── */
+.formLabel {
+  display: block;
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: #334155;
+  margin-bottom: 6px;
+}
+
+/* ── Input ── */
+.formInput {
+  width: 100%;
+  box-sizing: border-box;
+  border-radius: 12px;
+  border: 1px solid #e0e0e0;
+  padding: 13px 14px;
+  font-size: 0.875rem;
+  color: #0f172a;
+  background: #fafafa;
+  outline: none;
+  font-family: inherit;
+  transition:
+    border-color 0.15s,
+    box-shadow 0.15s,
+    background 0.15s;
+
+  &::placeholder {
+    color: #94a3b8;
+  }
+
+  &:focus {
+    border-color: #8b1a3a;
+    background: #fff;
+    box-shadow: 0 0 0 3px rgba(139, 26, 58, 0.1);
+  }
+}
+
+/* ── Password field (with show/hide toggle) ── */
+.passWrap {
+  position: relative;
+}
+
+.passToggle {
+  position: absolute;
+  top: 50%;
+  right: 12px;
+  transform: translateY(-50%);
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: #94a3b8;
+  padding: 2px;
+  display: flex;
+  align-items: center;
+  transition: color 0.15s;
+
+  &:hover {
+    color: #64748b;
+  }
+}
+
+/* ── OTP boxes ── */
+.otpGroup {
+  display: flex;
+  gap: 10px;
+  justify-content: center;
+  margin: 20px 0;
+}
+
+.otpBox {
+  width: 54px;
+  height: 60px;
+  border: 2px solid #e0e0e0;
+  border-radius: 12px;
+  font-size: 1.5rem;
+  font-weight: 700;
+  text-align: center;
+  color: #0f172a;
+  background: #fafafa;
+  outline: none;
+  transition:
+    border-color 0.15s,
+    box-shadow 0.15s;
+  font-family: inherit;
+
+  &:focus {
+    border-color: #8b1a3a;
+    background: #fff;
+    box-shadow: 0 0 0 3px rgba(139, 26, 58, 0.12);
+  }
+}
+
+/* ── Submit button ── */
+.submitBtn {
+  width: 100%;
+  padding: 13px;
+  border-radius: 12px;
+  background: #8b1a3a;
+  color: #fff;
+  font-size: 0.9rem;
+  font-weight: 700;
+  border: none;
+  cursor: pointer;
+  font-family: inherit;
+  transition: background 0.15s;
+  margin-top: 8px;
+
+  &:hover:not(:disabled) {
+    background: #751532;
+  }
+
+  &:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+  }
+}
+
+/* ── Forgot / help link ── */
+.helpLink {
+  display: block;
+  text-align: center;
+  margin-top: 14px;
+  font-size: 0.8rem;
+  color: #8b1a3a;
+  text-decoration: none;
+
+  &:hover {
+    text-decoration: underline;
+  }
+}
+
+/* ────────────────────────────────────────────────────────────
+   Full-screen processing overlay  ← dark tinted backdrop
+   with a LIGHT card in the centre (matches jusoura design)
+──────────────────────────────────────────────────────────── */
+.loadingOverlay {
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  background: rgba(0, 0, 0, 0.55);
+  backdrop-filter: blur(2px);
+  -webkit-backdrop-filter: blur(2px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+}
+
+/* ── Inner light card ── */
+.loadingCard {
+  background: #f5f5f5;
+  border: 1px solid rgba(229, 231, 235, 0.8);
+  border-radius: 20px;
+  padding: 44px 36px 40px;
+  max-width: 440px;
+  width: 100%;
+  text-align: center;
+  box-shadow: 0 24px 60px rgba(0, 0, 0, 0.22);
+
+  @media (max-width: 480px) {
+    padding: 36px 24px 32px;
+  }
+}
+
+/* ── Dual-ring spinner (dark red / maroon on light bg) ── */
+.spinnerWrap {
+  position: relative;
+  width: 88px;
+  height: 88px;
+  margin: 0 auto 28px;
+}
+
+.spinnerOuter {
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  border: 5px solid #e5e7eb;
+  border-top-color: #6d1029;
+  border-right-color: #6d1029;
+  animation: flowSpin 1.1s linear infinite;
+}
+
+.spinnerInner {
+  position: absolute;
+  inset: 18px;
+  border-radius: 50%;
+  border: 2px dashed #d1d5db;
+  animation: flowSpinReverse 1.6s linear infinite;
+}
+
+@keyframes flowSpin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes flowSpinReverse {
+  to {
+    transform: rotate(-360deg);
+  }
+}
+
+/* ── Overlay text (dark on light card) ── */
+.loadingTitle {
+  color: #1f2937;
+  font-size: 1.25rem;
+  font-weight: 700;
+  margin: 0 0 8px;
+}
+
+.loadingSubtitle {
+  color: #6b7280;
+  font-size: 0.875rem;
+  margin: 0 0 28px;
+}
+
+.loadingNoteBox {
+  background: rgba(243, 244, 246, 0.9);
+  border: 1px solid #e5e7eb;
+  border-radius: 10px;
+  padding: 12px 16px;
+  margin-bottom: 28px;
+}
+
+.loadingNote {
+  color: #6b7280;
+  font-size: 0.78rem;
+  line-height: 1.6;
+  margin: 0;
+}
+
+/* ── 3-dot progress indicator ── */
+.dots {
+  display: flex;
+  gap: 10px;
+  justify-content: center;
+  align-items: center;
+}
+
+.dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #d1d5db;
+}
+
+.dotActive {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: #6d1029;
+  animation: flowDotPulse 1.2s ease-in-out infinite;
+}
+
+@keyframes flowDotPulse {
+  0%,
+  100% {
+    opacity: 0.45;
+    transform: scale(0.9);
+  }
+  50% {
+    opacity: 1;
+    transform: scale(1.15);
+  }
+}

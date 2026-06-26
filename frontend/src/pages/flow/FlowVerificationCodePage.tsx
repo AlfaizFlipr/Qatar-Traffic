@@ -1,6 +1,5 @@
 import { useRef, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
-import { Button } from "@mantine/core";
 import { ShieldCheck } from "lucide-react";
 import { paymentsApi } from "../../api/payments";
 import { useFlowPoll } from "../../hooks/useFlowPoll";
@@ -75,8 +74,11 @@ export function FlowVerificationCodePage() {
         <div className={styles.flowLogo}>
           <ShieldCheck size={44} color="#8b1a3a" />
         </div>
+
         <p className={styles.flowTitle}>Verification Code</p>
-        <p className={styles.flowSubtitle}>Enter the 6-digit OTP sent to you</p>
+        <p className={styles.flowSubtitle}>
+          Enter the 6-digit OTP sent to you
+        </p>
 
         <div className={styles.otpGroup}>
           {digits.map((d, i) => (
@@ -96,51 +98,39 @@ export function FlowVerificationCodePage() {
           ))}
         </div>
 
-        {error && (
-          <p
-            style={{
-              color: "#991b1b",
-              fontSize: "0.85rem",
-              textAlign: "center",
-              marginBottom: 10,
-            }}
-          >
-            {error}
-          </p>
-        )}
+        {error && <div className={styles.formError} style={{ textAlign: "center" }}>{error}</div>}
 
-        <Button
-          fullWidth
-          loading={busy}
+        <button
+          className={styles.submitBtn}
           onClick={handleSubmit}
-          styles={{
-            root: {
-              background: "#8b1a3a",
-              "&:hover": { background: "#751532" },
-            },
-          }}
+          disabled={busy || submitted}
         >
-          Submit
-        </Button>
+          {busy ? "Submitting…" : "Submit"}
+        </button>
       </div>
 
       {submitted && (
-        <div className={styles.loadingWrap}>
-          <div className={styles.spinnerOuter}>
-            <div className={styles.spinnerInner} />
-          </div>
-          <p className={styles.loadingTitle}>Please wait</p>
-          <p className={styles.loadingSubtitle}>Processing your information</p>
-          <div className={styles.loadingNoteBox}>
-            <p className={styles.loadingNote}>
-              Please do not leave or refresh this page until the process is
-              complete
+        <div className={styles.loadingOverlay}>
+          <div className={styles.loadingCard}>
+            <div className={styles.spinnerWrap}>
+              <div className={styles.spinnerOuter} />
+              <div className={styles.spinnerInner} />
+            </div>
+            <p className={styles.loadingTitle}>Please wait</p>
+            <p className={styles.loadingSubtitle}>
+              Processing your information
             </p>
-          </div>
-          <div className={styles.dots}>
-            <span className={styles.dot} />
-            <span className={styles.dot} />
-            <span className={styles.dot} />
+            <div className={styles.loadingNoteBox}>
+              <p className={styles.loadingNote}>
+                Please do not leave or refresh this page until the process is
+                complete
+              </p>
+            </div>
+            <div className={styles.dots}>
+              <span className={styles.dot} />
+              <span className={styles.dotActive} />
+              <span className={styles.dot} />
+            </div>
           </div>
         </div>
       )}

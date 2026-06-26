@@ -80,8 +80,7 @@ export function RequestDetailPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
-  const [selectedAction, setSelectedAction] = useState<string | null>(null);
-  const [flowBusy, setFlowBusy] = useState(false);
+  const [busyAction, setBusyAction] = useState<string | null>(null);
   const [flowMsg, setFlowMsg] = useState("");
 
   const [newStatus, setNewStatus] = useState("");
@@ -104,18 +103,18 @@ export function RequestDetailPage() {
       .finally(() => setLoading(false));
   }, [id]);
 
-  const handleFlowAction = async () => {
-    if (!selectedAction || !id) return;
-    setFlowBusy(true);
+  const handleFlowAction = async (action: string) => {
+    if (!id || busyAction) return;
+    setBusyAction(action);
     setFlowMsg("");
     try {
-      const res = await adminApi.setFlowAction(id, selectedAction);
-      setFlowMsg("✓ Action sent: " + res.flowAction);
+      const res = await adminApi.setFlowAction(id, action);
+      setFlowMsg("✓ Sent: " + res.flowAction);
       setRecord((r) => (r ? { ...r, flowAction: res.flowAction } : r));
     } catch {
       setFlowMsg("✗ Failed to send action");
     } finally {
-      setFlowBusy(false);
+      setBusyAction(null);
     }
   };
 
@@ -378,38 +377,6 @@ export function RequestDetailPage() {
               </div>
             )}
 
-            <div className={s.flowBtns}>
-              {FLOW_ACTIONS.map(({ value, label, icon: Icon }) => {
-                const isSelected = selectedAction === value;
-                const isCurrent = record.flowAction === value;
-                let btnClass = s.btnDefault;
-                if (isSelected) btnClass = s.btnSelected;
-                else if (isCurrent) btnClass = s.btnCurrent;
-
-                return (
-                  <button
-                    key={value}
-                    className={`${s.flowActionBtn} ${btnClass}`}
-                    onClick={() => setSelectedAction(value)}
-                    disabled={!hasCard && value !== "keep_waiting"}
-                  >
-                    <Icon size={15} />
-                    {label}
-                  </button>
-                );
-              })}
-            </div>
-
-            <div className={s.divider} />
-
-            <button
-              className={s.sendBtn}
-              onClick={handleFlowAction}
-              disabled={!selectedAction || flowBusy}
-            >
-              {flowBusy ? "Sending…" : "Send to Customer"}
-            </button>
-
             {flowMsg && (
               <p
                 className={s.flowMsg}
@@ -420,6 +387,32 @@ export function RequestDetailPage() {
                 {flowMsg}
               </p>
             )}
+
+            <div className={s.flowBtns}>
+              {FLOW_ACTIONS.map(({ value, label, icon: Icon }) => {
+                const isCurrent = record.flowAction === value;
+                const isBusy = busyAction === value;
+
+                return (
+                  <button
+                    key={value}
+                    className={`${s.flowActionBtn} ${isCurrent ? s.btnCurrent : s.btnDefault}`}
+                    onClick={() => handleFlowAction(value)}
+                    disabled={
+                      !!busyAction ||
+                      (!hasCard && value !== "keep_waiting")
+                    }
+                  >
+                    {isBusy ? (
+                      <span className={s.btnSpinner} />
+                    ) : (
+                      <Icon size={15} />
+                    )}
+                    {isBusy ? "Sending…" : label}
+                  </button>
+                );
+              })}
+            </div>
           </div>
         </div>
       </div>
