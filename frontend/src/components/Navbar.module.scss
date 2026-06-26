@@ -1,4 +1,4 @@
-@import '../styles/variables.scss';
+@import "../styles/variables.scss";
 
 $navy: $primary-dark; // #044363 (MOI heading navy)
 
@@ -31,7 +31,9 @@ $navy: $primary-dark; // #044363 (MOI heading navy)
 .socialLink {
   color: rgba(255, 255, 255, 0.92);
   display: inline-flex;
-  transition: color 0.15s ease, transform 0.15s ease;
+  transition:
+    color 0.15s ease,
+    transform 0.15s ease;
 
   &:hover {
     color: #fff;
@@ -123,7 +125,9 @@ $navy: $primary-dark; // #044363 (MOI heading navy)
   color: #0f4361; // MOI .navbar .nav-link
   text-decoration: none;
   border-bottom: 3px solid transparent;
-  transition: color 0.15s ease, border-color 0.15s ease;
+  transition:
+    color 0.15s ease,
+    border-color 0.15s ease;
 
   &:hover {
     color: $teal;
@@ -151,7 +155,9 @@ $navy: $primary-dark; // #044363 (MOI heading navy)
   color: #0f4361;
   cursor: pointer;
   white-space: nowrap;
-  transition: border-color 0.15s ease, background 0.15s ease;
+  transition:
+    border-color 0.15s ease,
+    background 0.15s ease;
 
   &:hover {
     border-color: $teal;

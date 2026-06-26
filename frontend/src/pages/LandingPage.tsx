@@ -1,6 +1,6 @@
-import { Hero } from '../components/Hero'
-import { SearchTabs } from '../components/SearchTabs'
-import { MetrashSection } from '../components/MetrashSection'
+import { Hero } from "../components/Hero";
+import { SearchTabs } from "../components/SearchTabs";
+import { MetrashSection } from "../components/MetrashSection";
 
 export function LandingPage() {
   return (
@@ -9,5 +9,5 @@ export function LandingPage() {
       <SearchTabs />
       <MetrashSection />
     </>
-  )
+  );
 }

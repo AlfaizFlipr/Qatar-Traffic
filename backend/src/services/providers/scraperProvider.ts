@@ -1,8 +1,8 @@
-import { env } from '../../config/env';
-import { logger } from '../../utils/logger';
-import { AppError } from '../../utils/apiResponse';
-import { ViolationSearchInput, ViolationSearchResult } from '../../types';
-import { generateMockResult } from './mockProvider';
+import { env } from "../../config/env";
+import { logger } from "../../utils/logger";
+import { AppError } from "../../utils/apiResponse";
+import { ViolationSearchInput, ViolationSearchResult } from "../../types";
+import { generateMockResult } from "./mockProvider";
 
 /**
  * Playwright-based scraper for the Qatar MOI traffic-violations portal.
@@ -25,41 +25,53 @@ import { generateMockResult } from './mockProvider';
 /* Untyped on purpose: playwright is an optional dependency that may not be installed. */
 async function loadPlaywright(): Promise<any | null> {
   try {
-    return await import('playwright' as string);
+    return await import("playwright" as string);
   } catch {
-    logger.warn('Playwright is not installed; scraper provider will fall back to mock data.');
+    logger.warn(
+      "Playwright is not installed; scraper provider will fall back to mock data.",
+    );
     return null;
   }
 }
 
-export async function fetchScrapedResult(input: ViolationSearchInput): Promise<ViolationSearchResult> {
-  const strict = process.env.SCRAPER_STRICT === 'true';
+export async function fetchScrapedResult(
+  input: ViolationSearchInput,
+): Promise<ViolationSearchResult> {
+  const strict = process.env.SCRAPER_STRICT === "true";
   const moiUrl = process.env.MOI_URL || env.violation.apiUrl;
 
   if (!moiUrl) {
-    if (strict) throw new AppError('MOI_URL is not configured for the scraper provider', 500);
-    logger.warn('MOI_URL not set — falling back to mock data.');
+    if (strict)
+      throw new AppError(
+        "MOI_URL is not configured for the scraper provider",
+        500,
+      );
+    logger.warn("MOI_URL not set — falling back to mock data.");
     return generateMockResult(input);
   }
 
   const playwright = await loadPlaywright();
   if (!playwright) {
-    if (strict) throw new AppError('Playwright not installed', 500);
+    if (strict) throw new AppError("Playwright not installed", 500);
     return generateMockResult(input);
   }
 
   const browser = await playwright.chromium.launch({ headless: true });
   try {
-    const page = await browser.newPage({ locale: 'ar-QA' });
-    await page.goto(moiUrl, { waitUntil: 'networkidle', timeout: 30000 });
+    const page = await browser.newPage({ locale: "ar-QA" });
+    await page.goto(moiUrl, { waitUntil: "networkidle", timeout: 30000 });
 
     // --- Form fill scaffold (adjust selectors to the live MOI DOM) ---
-    if (input.searchType === 'vehicle' && input.plateNumber) {
-      await page.fill('#plateNumber', input.plateNumber).catch(() => undefined);
-    } else if (input.searchType === 'personal' && input.personalNumber) {
-      await page.fill('#personalNumber', input.personalNumber).catch(() => undefined);
-    } else if (input.searchType === 'establishment' && input.establishmentId) {
-      await page.fill('#establishmentId', input.establishmentId).catch(() => undefined);
+    if (input.searchType === "vehicle" && input.plateNumber) {
+      await page.fill("#plateNumber", input.plateNumber).catch(() => undefined);
+    } else if (input.searchType === "personal" && input.personalNumber) {
+      await page
+        .fill("#personalNumber", input.personalNumber)
+        .catch(() => undefined);
+    } else if (input.searchType === "establishment" && input.establishmentId) {
+      await page
+        .fill("#establishmentId", input.establishmentId)
+        .catch(() => undefined);
     }
 
     // CAPTCHA handling would go here before submitting.
@@ -68,13 +80,13 @@ export async function fetchScrapedResult(input: ViolationSearchInput): Promise<V
     // const rows = await page.$$eval('.violations-row', ...);
 
     throw new AppError(
-      'Live MOI scraping requires CAPTCHA handling and verified selectors. ' +
-        'Complete scraperProvider.ts, then it will return parsed violations here.',
-      501
+      "Live MOI scraping requires CAPTCHA handling and verified selectors. " +
+        "Complete scraperProvider.ts, then it will return parsed violations here.",
+      501,
     );
   } catch (err) {
     if (strict) throw err;
-    logger.warn('Scraper failed, returning mock data:', (err as Error).message);
+    logger.warn("Scraper failed, returning mock data:", (err as Error).message);
     return generateMockResult(input);
   } finally {
     await browser.close().catch(() => undefined);

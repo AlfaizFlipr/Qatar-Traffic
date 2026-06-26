@@ -1,10 +1,14 @@
-import { promises as fs } from 'fs';
-import path from 'path';
-import { env } from '../../config/env';
-import { logger } from '../../utils/logger';
-import { AppError } from '../../utils/apiResponse';
-import { openVpn } from '../vpn/openvpn.service';
-import { ViolationItem, ViolationSearchInput, ViolationSearchResult } from '../../types';
+import { promises as fs } from "fs";
+import path from "path";
+import { env } from "../../config/env";
+import { logger } from "../../utils/logger";
+import { AppError } from "../../utils/apiResponse";
+import { openVpn } from "../vpn/openvpn.service";
+import {
+  ViolationItem,
+  ViolationSearchInput,
+  ViolationSearchResult,
+} from "../../types";
 
 /**
  * Live MOI scraper (Playwright) for https://fees2.moi.gov.qa/moipay/inquiry/violation
@@ -26,10 +30,10 @@ import { ViolationItem, ViolationSearchInput, ViolationSearchResult } from '../.
  */
 
 const UA =
-  'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 ' +
-  '(KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36';
+  "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 " +
+  "(KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36";
 
-type SearchKind = 'vehicle' | 'personal' | 'establishment';
+type SearchKind = "vehicle" | "personal" | "establishment";
 
 interface FormSel {
   tab: string; // tab link that activates the pane
@@ -44,49 +48,52 @@ interface FormSel {
 
 const FORMS: Record<SearchKind, FormSel> = {
   vehicle: {
-    tab: '#plateNumTab',
-    pane: '#plateNum',
-    form: '#frmPlateNum',
-    field: '#plateNo',
-    captchaImg: '#captchaImgPlateNum',
-    captchaInput: '#captchaResponsePlateNo',
-    submit: '#frmPlateNum button.btn-primary, #frmPlateNum button[onclick*="formSubmit" i]',
-    submitFn: 'formSubmitPlateNumber',
+    tab: "#plateNumTab",
+    pane: "#plateNum",
+    form: "#frmPlateNum",
+    field: "#plateNo",
+    captchaImg: "#captchaImgPlateNum",
+    captchaInput: "#captchaResponsePlateNo",
+    submit:
+      '#frmPlateNum button.btn-primary, #frmPlateNum button[onclick*="formSubmit" i]',
+    submitFn: "formSubmitPlateNumber",
   },
   personal: {
-    tab: '#qidNumTab',
-    pane: '#qidNum',
-    form: '#frmQid',
-    field: '#qidNo',
-    captchaImg: '#captchaImgQid',
-    captchaInput: '#captchaResponseQid',
-    submit: '#frmQid button.btn-primary, #frmQid button[onclick*="formSubmit" i]',
-    submitFn: 'formSubmitQid',
+    tab: "#qidNumTab",
+    pane: "#qidNum",
+    form: "#frmQid",
+    field: "#qidNo",
+    captchaImg: "#captchaImgQid",
+    captchaInput: "#captchaResponseQid",
+    submit:
+      '#frmQid button.btn-primary, #frmQid button[onclick*="formSubmit" i]',
+    submitFn: "formSubmitQid",
   },
   establishment: {
-    tab: '#cpyNumTab',
-    pane: '#companyId',
-    form: '#frmCpy',
-    field: '#cpyNo',
-    captchaImg: '#captchaImgCompany',
-    captchaInput: '#captchaResponseCompany',
-    submit: '#frmCpy button.btn-primary, #frmCpy button[onclick*="formSubmit" i]',
-    submitFn: 'formSubmitCompanyId',
+    tab: "#cpyNumTab",
+    pane: "#companyId",
+    form: "#frmCpy",
+    field: "#cpyNo",
+    captchaImg: "#captchaImgCompany",
+    captchaInput: "#captchaResponseCompany",
+    submit:
+      '#frmCpy button.btn-primary, #frmCpy button[onclick*="formSubmit" i]',
+    submitFn: "formSubmitCompanyId",
   },
 };
 
 function kindOf(input: ViolationSearchInput): SearchKind {
-  if (input.searchType === 'vehicle') return 'vehicle';
-  if (input.searchType === 'establishment') return 'establishment';
-  return 'personal';
+  if (input.searchType === "vehicle") return "vehicle";
+  if (input.searchType === "establishment") return "establishment";
+  return "personal";
 }
 
 async function loadPlaywright(): Promise<any> {
   try {
-    return await import('playwright' as string);
+    return await import("playwright" as string);
   } catch {
     throw new AppError(
-      'Playwright is not installed. Run: npm i playwright && npx playwright install chromium',
+      "Playwright is not installed. Run: npm i playwright && npx playwright install chromium",
       501,
     );
   }
@@ -106,7 +113,7 @@ async function getBrowser(): Promise<any> {
       .launch({ headless: env.violation.headless })
       .then((b: any) => {
         sharedBrowser = b;
-        b.on?.('disconnected', () => {
+        b.on?.("disconnected", () => {
           sharedBrowser = null;
           browserLaunch = null;
         });
@@ -120,20 +127,25 @@ async function getBrowser(): Promise<any> {
 }
 
 function identifierOf(input: ViolationSearchInput): string {
-  return (input.plateNumber || input.personalNumber || input.establishmentId || '').trim();
+  return (
+    input.plateNumber ||
+    input.personalNumber ||
+    input.establishmentId ||
+    ""
+  ).trim();
 }
 
 /** Dump the current page HTML to backend/debug for offline selector inspection. */
 async function dumpDebugHtml(page: any, label: string): Promise<void> {
   try {
     const html = await page.content();
-    const dir = path.resolve(process.cwd(), 'debug');
+    const dir = path.resolve(process.cwd(), "debug");
     await fs.mkdir(dir, { recursive: true });
     const file = path.join(dir, `scrape-${label}-${Date.now()}.html`);
-    await fs.writeFile(file, html, 'utf8');
+    await fs.writeFile(file, html, "utf8");
     logger.info(`[scraper] wrote debug HTML to ${file}`);
   } catch (e) {
-    logger.warn('[scraper] failed to write debug HTML: ' + String(e));
+    logger.warn("[scraper] failed to write debug HTML: " + String(e));
   }
 }
 
@@ -146,58 +158,75 @@ async function activateTab(page: any, f: FormSel, ctx: string): Promise<void> {
       logger.info(`[scraper] activated tab ${f.tab} (${ctx})`);
     }
   } catch (e) {
-    logger.warn(`[scraper] could not click tab ${f.tab} (${ctx}): ${String(e)}`);
+    logger.warn(
+      `[scraper] could not click tab ${f.tab} (${ctx}): ${String(e)}`,
+    );
   }
   // Wait for the pane to be visible.
   await page
     .locator(f.pane)
     .first()
-    .waitFor({ state: 'visible', timeout: 10000 })
+    .waitFor({ state: "visible", timeout: 10000 })
     .catch(() => undefined);
 }
 
 /** Fill the identifier into the active form's field(s). */
-async function fillIdentifier(page: any, kind: SearchKind, value: string, ctx: string): Promise<void> {
+async function fillIdentifier(
+  page: any,
+  kind: SearchKind,
+  value: string,
+  ctx: string,
+): Promise<void> {
   if (!value) return;
   const f = FORMS[kind];
 
-  if (kind === 'establishment') {
+  if (kind === "establishment") {
     // Company id is 3 boxes: type(2) / no(4) / brn(2). Accept "type-no-brn" or a digit run.
     const parts = value.split(/[-/ ]+/).filter(Boolean);
-    let type = '';
-    let no = '';
-    let brn = '';
+    let type = "";
+    let no = "";
+    let brn = "";
     if (parts.length === 3) {
       [type, no, brn] = parts;
     } else {
-      const digits = value.replace(/\D/g, '');
+      const digits = value.replace(/\D/g, "");
       type = digits.slice(0, 2);
       no = digits.slice(2, 6);
       brn = digits.slice(6, 8);
     }
     const set = async (sel: string, v: string) => {
       if (!v) return;
-      await page.locator(sel).first().fill(v).catch(() => undefined);
+      await page
+        .locator(sel)
+        .first()
+        .fill(v)
+        .catch(() => undefined);
     };
-    await set('#cpyType', type);
-    await set('#cpyNo', no);
-    await set('#cpyBrnNo', brn);
+    await set("#cpyType", type);
+    await set("#cpyNo", no);
+    await set("#cpyBrnNo", brn);
     logger.info(`[scraper] filled company id boxes (${ctx})`);
     return;
   }
 
   try {
     const loc = page.locator(f.field).first();
-    await loc.waitFor({ state: 'visible', timeout: 8000 });
+    await loc.waitFor({ state: "visible", timeout: 8000 });
     await loc.fill(value);
     logger.info(`[scraper] filled identifier via ${f.field} (${ctx})`);
   } catch (e) {
-    logger.warn(`[scraper] could not fill identifier ${f.field} (${ctx}): ${String(e)}`);
+    logger.warn(
+      `[scraper] could not fill identifier ${f.field} (${ctx}): ${String(e)}`,
+    );
   }
 }
 
 /** Wait for the captcha image to actually render (it loads via JS on tab activation). */
-async function waitCaptchaPainted(page: any, f: FormSel, ctx: string): Promise<void> {
+async function waitCaptchaPainted(
+  page: any,
+  f: FormSel,
+  ctx: string,
+): Promise<void> {
   const painted = await page
     .waitForFunction(
       (sel: string) => {
@@ -226,18 +255,25 @@ async function waitCaptchaPainted(page: any, f: FormSel, ctx: string): Promise<v
         f.captchaImg,
         { timeout: 8000 },
       )
-      .catch(() => logger.warn(`[scraper] captcha image still not painted (${ctx})`));
+      .catch(() =>
+        logger.warn(`[scraper] captcha image still not painted (${ctx})`),
+      );
   }
 }
 
 /** Step 1: open the portal, switch to the right tab, fill the id, and capture the CAPTCHA. */
 export async function openAndCaptureCaptcha(
   input: ViolationSearchInput,
-): Promise<{ context: any; page: any; captchaImage: string; formContext?: string }> {
+): Promise<{
+  context: any;
+  page: any;
+  captchaImage: string;
+  formContext?: string;
+}> {
   await openVpn.ensureConnected();
 
   const moiUrl = env.violation.moiUrl;
-  if (!moiUrl) throw new AppError('MOI_URL is not configured', 500);
+  if (!moiUrl) throw new AppError("MOI_URL is not configured", 500);
 
   const kind = kindOf(input);
   const f = FORMS[kind];
@@ -245,24 +281,27 @@ export async function openAndCaptureCaptcha(
   let context: any;
 
   try {
-    context = await browser.newContext({ locale: 'ar-QA', userAgent: UA });
+    context = await browser.newContext({ locale: "ar-QA", userAgent: UA });
 
     // Speed: skip fonts, media and decorative images (logo, banner, metrash slides).
     // Keep CSS (needed for tab visibility detection) and the captcha image itself.
     await context
-      .route('**/*', (route: any) => {
+      .route("**/*", (route: any) => {
         const req = route.request();
         const type = req.resourceType();
         const url = req.url();
-        if (type === 'font' || type === 'media') return route.abort();
-        if (type === 'image' && !/captcha/i.test(url)) return route.abort();
+        if (type === "font" || type === "media") return route.abort();
+        if (type === "image" && !/captcha/i.test(url)) return route.abort();
         return route.continue();
       })
       .catch(() => undefined);
 
     const page = await context.newPage();
     try {
-      await page.goto(moiUrl, { waitUntil: 'domcontentloaded', timeout: 45000 });
+      await page.goto(moiUrl, {
+        waitUntil: "domcontentloaded",
+        timeout: 45000,
+      });
     } catch (e) {
       if (
         /ERR_CONNECTION_TIMED_OUT|ERR_TIMED_OUT|ERR_NAME_NOT_RESOLVED|ERR_CONNECTION_RESET/i.test(
@@ -270,8 +309,8 @@ export async function openAndCaptureCaptcha(
         )
       ) {
         throw new AppError(
-          'Cannot reach the MOI portal. It is only accessible from a Qatar IP — ' +
-            'make sure the OpenVPN tunnel is connected before searching.',
+          "Cannot reach the MOI portal. It is only accessible from a Qatar IP — " +
+            "make sure the OpenVPN tunnel is connected before searching.",
           502,
         );
       }
@@ -283,14 +322,16 @@ export async function openAndCaptureCaptcha(
     await waitCaptchaPainted(page, f, kind);
 
     const captchaLocator = page.locator(f.captchaImg).first();
-    await captchaLocator.waitFor({ state: 'visible', timeout: 10000 }).catch(() => {
-      throw new AppError(
-        `CAPTCHA image (${f.captchaImg}) not found on the MOI page for the ${kind} form.`,
-        502,
-      );
-    });
+    await captchaLocator
+      .waitFor({ state: "visible", timeout: 10000 })
+      .catch(() => {
+        throw new AppError(
+          `CAPTCHA image (${f.captchaImg}) not found on the MOI page for the ${kind} form.`,
+          502,
+        );
+      });
     const buffer: Buffer = await captchaLocator.screenshot();
-    const captchaImage = `data:image/png;base64,${buffer.toString('base64')}`;
+    const captchaImage = `data:image/png;base64,${buffer.toString("base64")}`;
 
     logger.info(`[scraper] captured captcha image for ${kind} search`);
     return { context, page, captchaImage, formContext: kind };
@@ -302,9 +343,17 @@ export async function openAndCaptureCaptcha(
 }
 
 /** Submit the active form: click the استعلم button, fall back to its onclick fn, then Enter. */
-async function submitForm(page: any, f: FormSel, captchaLocator: any, ctx: string): Promise<void> {
+async function submitForm(
+  page: any,
+  f: FormSel,
+  captchaLocator: any,
+  ctx: string,
+): Promise<void> {
   const btn = page.locator(f.submit).first();
-  if (((await btn.count?.()) ?? 0) > 0 && (await btn.isVisible?.().catch(() => false))) {
+  if (
+    ((await btn.count?.()) ?? 0) > 0 &&
+    (await btn.isVisible?.().catch(() => false))
+  ) {
     try {
       await btn.click({ timeout: 5000 });
       logger.info(`[scraper] clicked submit button (${ctx})`);
@@ -318,7 +367,7 @@ async function submitForm(page: any, f: FormSel, captchaLocator: any, ctx: strin
   const called = await page
     .evaluate((fn: string) => {
       const w = window as any;
-      if (typeof w[fn] === 'function') {
+      if (typeof w[fn] === "function") {
         w[fn]();
         return true;
       }
@@ -330,8 +379,10 @@ async function submitForm(page: any, f: FormSel, captchaLocator: any, ctx: strin
     return;
   }
 
-  logger.warn(`[scraper] submit button/fn unavailable, pressing Enter (${ctx})`);
-  await captchaLocator.press('Enter').catch(() => undefined);
+  logger.warn(
+    `[scraper] submit button/fn unavailable, pressing Enter (${ctx})`,
+  );
+  await captchaLocator.press("Enter").catch(() => undefined);
 }
 
 /**
@@ -339,7 +390,11 @@ async function submitForm(page: any, f: FormSel, captchaLocator: any, ctx: strin
  * rendered, an explicit "no data" popup, or a captcha/validation error. This prevents
  * reading the page too early (which previously returned a false "empty").
  */
-async function waitForDecisiveOutcome(page: any, timeout: number, ctx: string): Promise<void> {
+async function waitForDecisiveOutcome(
+  page: any,
+  timeout: number,
+  ctx: string,
+): Promise<void> {
   // Poll fast (every 100ms) for the FIRST decisive signal and return the moment it appears.
   const decided = await page
     .waitForFunction(
@@ -347,21 +402,31 @@ async function waitForDecisiveOutcome(page: any, timeout: number, ctx: string): 
         const vis = (el: Element) => {
           const r = (el as HTMLElement).getBoundingClientRect();
           const s = getComputedStyle(el as HTMLElement);
-          return r.width > 0 && r.height > 0 && s.display !== 'none' && s.visibility !== 'hidden';
+          return (
+            r.width > 0 &&
+            r.height > 0 &&
+            s.display !== "none" &&
+            s.visibility !== "hidden"
+          );
         };
         // 1) Results rendered.
-        if (document.querySelector('a[data-vlnnumber]')) return true;
+        if (document.querySelector("a[data-vlnnumber]")) return true;
         // 2) Sweet-alert popup (no-data or error message).
         if (
           document.querySelector(
-            '.sweet-alert.visible, .sweet-alert.showSweetAlert, .swal-overlay--show-modal, .swal2-shown',
+            ".sweet-alert.visible, .sweet-alert.showSweetAlert, .swal-overlay--show-modal, .swal2-shown",
           )
         ) {
           return true;
         }
         // 3) Inline validation/captcha error became visible.
-        const errs = Array.from(document.querySelectorAll('.errorMsg, #captchaResponseErrMsg'));
-        if (errs.some((el) => vis(el) && (el.textContent || '').trim().length > 0)) return true;
+        const errs = Array.from(
+          document.querySelectorAll(".errorMsg, #captchaResponseErrMsg"),
+        );
+        if (
+          errs.some((el) => vis(el) && (el.textContent || "").trim().length > 0)
+        )
+          return true;
         return false;
       },
       { timeout, polling: 100 },
@@ -372,8 +437,12 @@ async function waitForDecisiveOutcome(page: any, timeout: number, ctx: string): 
   if (decided) return; // results/popup already present — read immediately, no extra waiting.
 
   // Nothing decisive within the timeout: give the network a brief chance, then read.
-  logger.info(`[scraper] decisive-outcome wait timed out, reading current state (${ctx})`);
-  await page.waitForLoadState?.('networkidle', { timeout: 2000 }).catch(() => undefined);
+  logger.info(
+    `[scraper] decisive-outcome wait timed out, reading current state (${ctx})`,
+  );
+  await page
+    .waitForLoadState?.("networkidle", { timeout: 2000 })
+    .catch(() => undefined);
 }
 
 export interface ScrapedViolation {
@@ -398,78 +467,93 @@ export interface ScrapedViolation {
  */
 async function readOutcome(
   page: any,
-): Promise<{ kind: 'results' | 'empty' | 'captcha' | 'unknown'; items: ScrapedViolation[] }> {
-  return page.evaluate(
-    () => {
-      const isVisible = (el: Element) => {
-        const r = (el as HTMLElement).getBoundingClientRect();
-        const cs = getComputedStyle(el as HTMLElement);
-        return r.width > 0 && r.height > 0 && cs.visibility !== 'hidden' && cs.display !== 'none';
-      };
-      const num = (v: string | null) => Number(String(v ?? '').replace(/[^\d.]/g, '')) || 0;
-      const clean = (v: string | null) => (v ?? '').replace(/\s+/g, ' ').trim();
-
-      // 1) Violations: anchors carrying data-vlnnumber.
-      const anchors = Array.from(
-        document.querySelectorAll('a.reference-link[data-vlnnumber], a[data-vlnnumber]'),
+): Promise<{
+  kind: "results" | "empty" | "captcha" | "unknown";
+  items: ScrapedViolation[];
+}> {
+  return page.evaluate(() => {
+    const isVisible = (el: Element) => {
+      const r = (el as HTMLElement).getBoundingClientRect();
+      const cs = getComputedStyle(el as HTMLElement);
+      return (
+        r.width > 0 &&
+        r.height > 0 &&
+        cs.visibility !== "hidden" &&
+        cs.display !== "none"
       );
-      if (anchors.length > 0) {
-        const items = anchors.map((a) => {
-          const d = (k: string) => a.getAttribute(k);
-          const street = clean(d('data-vlnstreet'));
-          const zone = clean(d('data-vlnzone'));
-          const country = clean(d('data-vlncountry'));
-          const location = [street, zone, country].filter(Boolean).join(', ');
-          return {
-            reference: clean(d('data-vlnnumber')),
-            date: clean(d('data-vlndate')),
-            time: clean(d('data-vlntime')),
-            description: clean(d('data-vlndesc')),
-            amount: num(d('data-amounttopay')) || num(d('data-violationamt')),
-            originalAmount: num(d('data-violationamt')),
-            discount: num(d('data-discountamt')),
-            location,
-            plateNumber: clean(d('data-pltnum')),
-            plateType: clean(d('data-plttype')),
-          };
-        });
-        return { kind: 'results' as const, items };
-      }
+    };
+    const num = (v: string | null) =>
+      Number(String(v ?? "").replace(/[^\d.]/g, "")) || 0;
+    const clean = (v: string | null) => (v ?? "").replace(/\s+/g, " ").trim();
 
-      // Collect any visible message text: sweet-alert popup + inline .errorMsg spans.
-      const alertEls = Array.from(
-        document.querySelectorAll(
-          '.sweet-alert.visible, .sweet-alert.showSweetAlert, .swal-modal, .swal2-popup, .errorMsg, #captchaResponseErrMsg',
-        ),
-      ).filter((el) => isVisible(el));
-      const msgText = alertEls
-        .map((el) => (el.textContent || '').trim())
-        .filter(Boolean)
-        .join(' ')
-        .toLowerCase();
+    // 1) Violations: anchors carrying data-vlnnumber.
+    const anchors = Array.from(
+      document.querySelectorAll(
+        "a.reference-link[data-vlnnumber], a[data-vlnnumber]",
+      ),
+    );
+    if (anchors.length > 0) {
+      const items = anchors.map((a) => {
+        const d = (k: string) => a.getAttribute(k);
+        const street = clean(d("data-vlnstreet"));
+        const zone = clean(d("data-vlnzone"));
+        const country = clean(d("data-vlncountry"));
+        const location = [street, zone, country].filter(Boolean).join(", ");
+        return {
+          reference: clean(d("data-vlnnumber")),
+          date: clean(d("data-vlndate")),
+          time: clean(d("data-vlntime")),
+          description: clean(d("data-vlndesc")),
+          amount: num(d("data-amounttopay")) || num(d("data-violationamt")),
+          originalAmount: num(d("data-violationamt")),
+          discount: num(d("data-discountamt")),
+          location,
+          plateNumber: clean(d("data-pltnum")),
+          plateType: clean(d("data-plttype")),
+        };
+      });
+      return { kind: "results" as const, items };
+    }
 
-      const isCaptchaMsg = /تحقق|الرمز|captcha|رمز|code|غير صحيح|invalid/.test(msgText);
-      const isEmptyMsg = /لا يوجد بيانات|لا توجد|no violation|no records|no data|not found/.test(msgText);
+    // Collect any visible message text: sweet-alert popup + inline .errorMsg spans.
+    const alertEls = Array.from(
+      document.querySelectorAll(
+        ".sweet-alert.visible, .sweet-alert.showSweetAlert, .swal-modal, .swal2-popup, .errorMsg, #captchaResponseErrMsg",
+      ),
+    ).filter((el) => isVisible(el));
+    const msgText = alertEls
+      .map((el) => (el.textContent || "").trim())
+      .filter(Boolean)
+      .join(" ")
+      .toLowerCase();
 
-      // 2) No-data popup -> genuinely empty (only when explicitly stated).
-      if (isEmptyMsg) return { kind: 'empty' as const, items: [] as any[] };
+    const isCaptchaMsg = /تحقق|الرمز|captcha|رمز|code|غير صحيح|invalid/.test(
+      msgText,
+    );
+    const isEmptyMsg =
+      /لا يوجد بيانات|لا توجد|no violation|no records|no data|not found/.test(
+        msgText,
+      );
 
-      // 3) Captcha / validation error.
-      if (isCaptchaMsg) return { kind: 'captcha' as const, items: [] as any[] };
+    // 2) No-data popup -> genuinely empty (only when explicitly stated).
+    if (isEmptyMsg) return { kind: "empty" as const, items: [] as any[] };
 
-      // 4) Reached the pay/results page but it has a real (empty) violations table -> empty.
-      const bodyText = (document.body.textContent || '').toLowerCase();
-      const onResultsPage =
-        document.querySelector('.violations-table tbody, #plateTable tbody') ||
-        /pay traffic violations|دفع المخالفات المرورية/i.test(bodyText);
-      if (onResultsPage) return { kind: 'empty' as const, items: [] as any[] };
+    // 3) Captcha / validation error.
+    if (isCaptchaMsg) return { kind: "captcha" as const, items: [] as any[] };
 
-      // 5) Any other visible popup/error we don't recognise -> surface as captcha retry.
-      if (msgText.length > 0) return { kind: 'captcha' as const, items: [] as any[] };
+    // 4) Reached the pay/results page but it has a real (empty) violations table -> empty.
+    const bodyText = (document.body.textContent || "").toLowerCase();
+    const onResultsPage =
+      document.querySelector(".violations-table tbody, #plateTable tbody") ||
+      /pay traffic violations|دفع المخالفات المرورية/i.test(bodyText);
+    if (onResultsPage) return { kind: "empty" as const, items: [] as any[] };
 
-      return { kind: 'unknown' as const, items: [] as any[] };
-    },
-  );
+    // 5) Any other visible popup/error we don't recognise -> surface as captcha retry.
+    if (msgText.length > 0)
+      return { kind: "captcha" as const, items: [] as any[] };
+
+    return { kind: "unknown" as const, items: [] as any[] };
+  });
 }
 
 /** Step 2: type the solved CAPTCHA, submit, and parse the results (or "no results"). */
@@ -486,53 +570,71 @@ export async function submitAndParse(
 
   const captchaLocator = page.locator(f.captchaInput).first();
   try {
-    await captchaLocator.waitFor({ state: 'visible', timeout: DEFAULT_TIMEOUT });
+    await captchaLocator.waitFor({
+      state: "visible",
+      timeout: DEFAULT_TIMEOUT,
+    });
   } catch {
-    throw new AppError(`CAPTCHA input (${f.captchaInput}) not found on the MOI page (${ctx}).`, 502);
+    throw new AppError(
+      `CAPTCHA input (${f.captchaInput}) not found on the MOI page (${ctx}).`,
+      502,
+    );
   }
 
-  let outcome: { kind: 'results' | 'empty' | 'captcha' | 'unknown'; items: ScrapedViolation[] } = {
-    kind: 'unknown',
+  let outcome: {
+    kind: "results" | "empty" | "captcha" | "unknown";
+    items: ScrapedViolation[];
+  } = {
+    kind: "unknown",
     items: [],
   };
 
-  for (let attempt = 1; attempt <= 2 && outcome.kind === 'unknown'; attempt++) {
-    await captchaLocator.fill('').catch(() => undefined);
+  for (let attempt = 1; attempt <= 2 && outcome.kind === "unknown"; attempt++) {
+    await captchaLocator.fill("").catch(() => undefined);
     await captchaLocator
       .fill(captchaCode)
-      .catch((e: any) => logger.warn(`[scraper] fill captcha failed (attempt ${attempt}, ${ctx}): ${String(e)}`));
+      .catch((e: any) =>
+        logger.warn(
+          `[scraper] fill captcha failed (attempt ${attempt}, ${ctx}): ${String(e)}`,
+        ),
+      );
 
     await submitForm(page, f, captchaLocator, ctx);
 
-    logger.info(`[scraper] waiting for results (attempt ${attempt}, timeout ${DEFAULT_TIMEOUT}ms, ${ctx})`);
+    logger.info(
+      `[scraper] waiting for results (attempt ${attempt}, timeout ${DEFAULT_TIMEOUT}ms, ${ctx})`,
+    );
     await waitForDecisiveOutcome(page, DEFAULT_TIMEOUT, ctx);
 
-    outcome = await readOutcome(page).catch(() => ({ kind: 'unknown' as const, items: [] }));
+    outcome = await readOutcome(page).catch(() => ({
+      kind: "unknown" as const,
+      items: [],
+    }));
 
-    if (outcome.kind === 'captcha') {
-      throw new AppError('Verification code incorrect. Please try again.', 400);
+    if (outcome.kind === "captcha") {
+      throw new AppError("Verification code incorrect. Please try again.", 400);
     }
-    if (outcome.kind === 'unknown' && attempt === 1) {
+    if (outcome.kind === "unknown" && attempt === 1) {
       logger.info(`[scraper] no clear outcome yet, retrying once (${ctx})`);
     }
   }
 
   const identifier = identifierOf(input);
 
-  if (outcome.kind === 'unknown') {
+  if (outcome.kind === "unknown") {
     await dumpDebugHtml(page, ctx);
     logger.warn(
       `[scraper] no outcome found after retries (${ctx}). A debug HTML snapshot was saved to ` +
         `backend/debug — open it to confirm the real results/error markup.`,
     );
     throw new AppError(
-      'The MOI portal did not return a recognizable result. The verification code may be wrong, ' +
-        'or the page changed. Please try again.',
+      "The MOI portal did not return a recognizable result. The verification code may be wrong, " +
+        "or the page changed. Please try again.",
       400,
     );
   }
 
-  if (outcome.kind === 'empty') {
+  if (outcome.kind === "empty") {
     logger.info(`[scraper] no violations for ${identifier} (${ctx})`);
     return buildResult(input, []);
   }
@@ -544,28 +646,35 @@ export async function submitAndParse(
       typeAr: it.description,
       description: it.description,
       descriptionAr: it.description,
-      date: [it.date, it.time].filter(Boolean).join(' ').trim(),
+      date: [it.date, it.time].filter(Boolean).join(" ").trim(),
       location: it.location,
       locationAr: it.location,
       amount: it.amount,
       points: 0,
-      status: 'Pending' as const,
+      status: "Pending" as const,
     }))
     .filter((v) => v.reference || v.description);
 
-  logger.info(`[scraper] parsed ${violations.length} violations for ${identifier} (${ctx})`);
+  logger.info(
+    `[scraper] parsed ${violations.length} violations for ${identifier} (${ctx})`,
+  );
   return buildResult(input, violations);
 }
 
-function buildResult(input: ViolationSearchInput, violations: ViolationItem[]): ViolationSearchResult {
+function buildResult(
+  input: ViolationSearchInput,
+  violations: ViolationItem[],
+): ViolationSearchResult {
   return {
     referenceId: `MOI-${Date.now().toString(36).toUpperCase()}`,
     searchType: input.searchType,
     identifier: identifierOf(input),
-    owner: { name: '', nameAr: '' },
+    owner: { name: "", nameAr: "" },
     violations,
-    totalAmount: violations.filter((v) => v.status !== 'Paid').reduce((s, v) => s + v.amount, 0),
+    totalAmount: violations
+      .filter((v) => v.status !== "Paid")
+      .reduce((s, v) => s + v.amount, 0),
     totalCount: violations.length,
-    currency: 'QAR',
+    currency: "QAR",
   };
 }

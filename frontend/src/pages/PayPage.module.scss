@@ -1,23 +1,23 @@
-@import '../styles/variables.scss';
+@import "../styles/variables.scss";
 
-$navy: $primary; // #0d4261
+$navy: $primary;
 
+// ── Page shell ───────────────────────────────────────────────────────────────
 .page {
-  background: $surface; // #f1f4f8
+  background: $surface;
   min-height: 70vh;
-  padding-bottom: 48px;
+  padding-bottom: 56px;
 }
 
-/* MOI #sub-banner */
 .titleBand {
   background: $primary;
   background-image: $gradient;
   color: #fff;
   text-align: center;
-  font-size: 2rem;
+  font-size: 1.75rem;
   font-weight: 700;
   letter-spacing: 0.3px;
-  padding: 30px 16px;
+  padding: 28px 16px;
 }
 
 .wrap {
@@ -26,7 +26,7 @@ $navy: $primary; // #0d4261
   padding: 28px 20px 0;
   display: flex;
   flex-direction: column;
-  gap: 22px;
+  gap: 20px;
 }
 
 .empty {
@@ -38,33 +38,40 @@ $navy: $primary; // #0d4261
   text-align: center;
 }
 
-/* ── Vehicle Information ── */
+// ── Vehicle card ─────────────────────────────────────────────────────────────
 .vehicleCard {
   position: relative;
   overflow: hidden;
   background: $primary;
   background-image: $gradient;
-  border-radius: 6px;
-  padding: 22px 30px;
+  border-radius: 8px;
+  padding: 24px 30px;
   color: #fff;
-}
+  box-shadow: 0 4px 16px rgba(13, 66, 97, 0.18);
 
-/* subtle diagonal sheen, like the screenshot banner */
-.vehicleCard::after {
-  content: '';
-  position: absolute;
-  inset: 0;
-  background: linear-gradient(120deg, transparent 0%, transparent 55%, rgba(255, 255, 255, 0.05) 55%, rgba(255, 255, 255, 0.05) 70%, transparent 70%);
-  pointer-events: none;
+  &::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(
+      120deg,
+      transparent 55%,
+      rgba(255, 255, 255, 0.06) 55%,
+      rgba(255, 255, 255, 0.06) 70%,
+      transparent 70%
+    );
+    pointer-events: none;
+  }
 }
 
 .vehicleHeading {
   position: relative;
   z-index: 1;
-  margin: 0 0 16px;
-  font-size: 1.15rem;
+  margin: 0 0 18px;
+  font-size: 1.1rem;
   font-weight: 700;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.18);
+  letter-spacing: 0.2px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.2);
   padding-bottom: 14px;
 }
 
@@ -74,60 +81,64 @@ $navy: $primary; // #0d4261
   display: grid;
   grid-template-columns: repeat(3, 1fr);
   gap: 16px;
+}
+
+.vehicleCell {
   text-align: center;
+  padding: 8px 0;
 }
 
 .vLabel {
   display: block;
-  font-size: 0.85rem;
-  color: rgba(255, 255, 255, 0.75);
+  font-size: 0.8rem;
+  color: rgba(255, 255, 255, 0.7);
   margin-bottom: 6px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
 }
 
 .vValue {
   display: block;
-  font-size: 1.1rem;
+  font-size: 1.05rem;
   font-weight: 700;
 }
 
-/* ── Generic card ── */
+// ── Generic white card ───────────────────────────────────────────────────────
 .card {
   background: #fff;
-  border-radius: 6px;
-  padding: 22px 26px;
-  box-shadow: 0 6px 18px rgba(16, 24, 40, 0.05);
+  border-radius: 8px;
+  padding: 24px 26px;
+  box-shadow: 0 2px 12px rgba(16, 24, 40, 0.06);
+  border: 1px solid #eaecf0;
 }
 
-/* MOI .inner-subtitle */
 .cardTitle {
   margin: 0 0 20px;
   padding-bottom: 14px;
-  border-bottom: 1px solid $surface;
-  font-size: 1.2rem;
+  border-bottom: 2px solid $surface;
+  font-size: 1.1rem;
   font-weight: 700;
-  color: $primary-dark; // #044363
+  color: $primary-dark;
+  display: flex;
+  align-items: center;
+  gap: 8px;
 }
 
+// ── Contact grid ─────────────────────────────────────────────────────────────
 .contactGrid {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
-  gap: 18px;
+  gap: 16px;
 
   @media (max-width: 860px) {
     grid-template-columns: repeat(2, 1fr);
   }
+
   @media (max-width: 520px) {
     grid-template-columns: 1fr;
   }
 }
 
-.phonePrefix {
-  font-size: 0.9rem;
-  font-weight: 700;
-  color: $primary-dark;
-}
-
-/* Country-code selector + number input on one row */
 .phoneRow {
   display: flex;
   gap: 8px;
@@ -144,7 +155,6 @@ $navy: $primary; // #0d4261
   min-width: 0;
 }
 
-/* Dropdown option: flag | name (grows) | dial */
 .countryOption {
   display: flex;
   align-items: center;
@@ -165,64 +175,92 @@ $navy: $primary; // #0d4261
   font-weight: 600;
 }
 
-/* ── Violations table ── */
+// ── Violations table ─────────────────────────────────────────────────────────
 .table {
-  border: 1px solid #eaedf1;
-  border-radius: 6px;
+  border: 1px solid #e4e7ec;
+  border-radius: 8px;
   overflow: hidden;
+  margin-bottom: 4px;
 }
 
 .thead,
 .trow {
   display: grid;
-  grid-template-columns: 56px 140px 1fr 130px 110px;
+  grid-template-columns: 52px 150px 1fr 140px 110px;
   align-items: center;
   gap: 10px;
-  padding: 14px 16px;
+  padding: 13px 16px;
 }
 
-/* MOI table header (.bgc-default-tp1 / th color #044363) */
 .thead {
-  background: $panel; // #e1eaf0
+  background: $panel;
   font-weight: 700;
   color: $primary-dark;
-  font-size: 0.92rem;
+  font-size: 0.85rem;
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
 }
 
 .trow {
-  border-top: 1px solid #eef0f3;
+  border-top: 1px solid #f0f2f5;
+  transition: background 0.12s ease;
 
   &:nth-child(even) {
     background: #fafbfc;
   }
+
+  &:hover {
+    background: #f3f6fa;
+  }
+}
+
+.trowPaid {
+  opacity: 0.6;
 }
 
 .cInfo {
   display: flex;
   flex-direction: column;
-  gap: 2px;
+  gap: 3px;
 }
 
 .vDate {
-  font-size: 0.82rem;
-  color: #7a8694;
+  font-size: 0.78rem;
+  color: #8896a5;
+  font-variant-numeric: tabular-nums;
 }
 
 .vDesc {
-  font-size: 0.9rem;
-  color: #2b3a55;
+  font-size: 0.88rem;
+  color: #1d2939;
   font-weight: 600;
+  line-height: 1.35;
 }
 
-.vExtra {
-  font-size: 0.82rem;
-  color: #6b7280;
-  margin-top: 2px;
+.statusBadge {
+  display: inline-block;
+  margin-top: 3px;
+  padding: 2px 8px;
+  border-radius: 20px;
+  font-size: 0.72rem;
+  font-weight: 700;
+  background: #d1fae5;
+  color: #065f46;
+  letter-spacing: 0.3px;
+  text-transform: uppercase;
 }
 
 .cAmount {
   font-weight: 700;
   color: $navy;
+  font-variant-numeric: tabular-nums;
+}
+
+.currencyCode {
+  font-size: 0.78rem;
+  font-weight: 500;
+  color: #667085;
+  margin-left: 2px;
 }
 
 .cAction {
@@ -230,29 +268,39 @@ $navy: $primary; // #0d4261
 }
 
 .detailsBtn {
-  background: #f1f3f6;
-  border: 1px solid #d7dce3;
-  border-radius: 5px;
-  padding: 6px 16px;
-  font-size: 0.85rem;
+  background: #fff;
+  border: 1px solid #d0d5dd;
+  border-radius: 6px;
+  padding: 6px 14px;
+  font-size: 0.82rem;
   font-weight: 600;
-  color: #3c4150;
+  color: #344054;
   cursor: pointer;
-  transition: background 0.15s ease;
+  white-space: nowrap;
+  transition:
+    background 0.12s ease,
+    border-color 0.12s ease;
 
   &:hover {
-    background: #e6eaef;
+    background: #f2f4f7;
+    border-color: #b1b9c5;
+  }
+
+  &:active {
+    background: #e8ecf1;
   }
 }
 
-/* ── Footer row ── */
+// ── Table footer ─────────────────────────────────────────────────────────────
 .tableFooter {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 18px;
+  gap: 16px;
   flex-wrap: wrap;
-  margin-top: 18px;
+  margin-top: 20px;
+  padding-top: 18px;
+  border-top: 1px solid #f0f2f5;
 }
 
 .captchaGroup {
@@ -262,54 +310,78 @@ $navy: $primary; // #0d4261
 }
 
 .captchaField {
-  width: 150px;
+  width: 148px;
 }
 
 .captchaRefresh {
   background: none;
-  border: none;
+  border: 1px solid #d0d5dd;
+  border-radius: 6px;
   color: $teal;
   cursor: pointer;
   display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 34px;
+  height: 34px;
+  transition: background 0.12s ease;
+
+  &:hover {
+    background: #f3f8fb;
+  }
 }
 
-/* MOI captcha image holder — plain bordered box */
 .captchaBox {
   background: #fff;
-  color: $text-muted;
-  border: 1px solid #bdbdbd;
-  font-size: 0.9rem;
-  font-weight: 700;
-  letter-spacing: 2px;
-  padding: 9px 18px;
-  border-radius: 4px;
+  border: 1px solid #c4c9d0;
+  border-radius: 6px;
+  font-size: 0.88rem;
+  font-weight: 800;
+  letter-spacing: 4px;
+  padding: 7px 16px;
+  color: $primary-dark;
   user-select: none;
+  font-family: "Courier New", Courier, monospace;
 }
 
 .totalActions {
   display: flex;
   align-items: center;
-  gap: 14px;
+  gap: 12px;
   flex-wrap: wrap;
 }
 
 .totalBox {
-  background: $panel; // #e1eaf0
-  border-radius: 6px;
+  background: $panel;
+  border: 1px solid #dde3ec;
+  border-radius: 8px;
   padding: 10px 18px;
   display: flex;
   gap: 10px;
   align-items: baseline;
 }
 
-.selectError {
-  margin: 12px 2px 0;
-  color: #d92d20;
+.totalLabel {
+  color: #667085;
   font-size: 0.85rem;
+  font-weight: 500;
+}
+
+.totalValue {
+  font-weight: 800;
+  color: $navy;
+  font-size: 1.05rem;
+  font-variant-numeric: tabular-nums;
+}
+
+.selectError {
+  margin: 10px 2px 0;
+  color: #d92d20;
+  font-size: 0.83rem;
   font-weight: 600;
 }
 
-/* ── Details modal ── */
+// ── Violation detail modal ───────────────────────────────────────────────────
 .modalBody {
   display: flex;
   flex-direction: column;
@@ -317,10 +389,10 @@ $navy: $primary; // #0d4261
 
 .modalRow {
   display: grid;
-  grid-template-columns: 130px 1fr;
+  grid-template-columns: 136px 1fr;
   gap: 12px;
-  padding: 10px 2px;
-  border-bottom: 1px solid #eef0f3;
+  padding: 10px 4px;
+  border-bottom: 1px solid #f0f2f5;
 
   &:last-of-type {
     border-bottom: none;
@@ -328,45 +400,44 @@ $navy: $primary; // #0d4261
 }
 
 .modalLabel {
-  color: #5b6472;
-  font-size: 0.88rem;
+  color: #667085;
+  font-size: 0.85rem;
   font-weight: 600;
 }
 
 .modalValue {
-  color: #1f2a44;
-  font-size: 0.92rem;
+  color: #1d2939;
+  font-size: 0.9rem;
   font-weight: 600;
 }
 
-.totalLabel {
-  color: #5b6472;
-  font-size: 0.9rem;
-}
-
-.totalValue {
-  font-weight: 800;
-  color: $navy;
-  font-size: 1.05rem;
-}
-
+// ── Mobile ───────────────────────────────────────────────────────────────────
 @media (max-width: 760px) {
   .thead {
     display: none;
   }
+
   .trow {
     grid-template-columns: 36px 1fr auto;
     grid-template-areas:
-      'check info amount'
-      'check no action';
+      "check info   amount"
+      "check no     action";
+    padding: 12px 14px;
+    gap: 8px;
   }
-  .cCheck { grid-area: check; align-self: start; }
-  .cInfo { grid-area: info; }
-  .cNo {
-    grid-area: no;
-    font-size: 0.78rem;
-    color: #7a8694;
-  }
-  .cAmount { grid-area: amount; }
+
+  .cCheck  { grid-area: check;  align-self: start; }
+  .cInfo   { grid-area: info; }
+  .cNo     { grid-area: no;     font-size: 0.76rem; color: #8896a5; }
+  .cAmount { grid-area: amount; align-self: start; }
   .cAction { grid-area: action; }
+
+  .tableFooter {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .totalActions {
+    justify-content: flex-end;
+  }
 }

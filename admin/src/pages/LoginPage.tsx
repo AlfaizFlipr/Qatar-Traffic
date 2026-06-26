@@ -1,5 +1,5 @@
-import { useState, type FormEvent } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useState, type FormEvent } from "react";
+import { useNavigate } from "react-router-dom";
 import {
   Alert,
   Box,
@@ -12,38 +12,42 @@ import {
   TextInput,
   ThemeIcon,
   Title,
-} from '@mantine/core'
-import { AlertCircle, Lock, ShieldCheck, User } from 'lucide-react'
-import { useAdminAuth } from '../context/AdminAuthContext'
-import { ApiError } from '../api/client'
+} from "@mantine/core";
+import { AlertCircle, Lock, ShieldCheck, User } from "lucide-react";
+import { useAdminAuth } from "../context/AdminAuthContext";
+import { ApiError } from "../api/client";
 
 export function LoginPage() {
-  const { login } = useAdminAuth()
-  const navigate = useNavigate()
-  const [username, setUsername] = useState('')
-  const [password, setPassword] = useState('')
-  const [error, setError] = useState<string | null>(null)
-  const [loading, setLoading] = useState(false)
+  const { login } = useAdminAuth();
+  const navigate = useNavigate();
+  const [username, setUsername] = useState("");
+  const [password, setPassword] = useState("");
+  const [error, setError] = useState<string | null>(null);
+  const [loading, setLoading] = useState(false);
 
   async function handleSubmit(e: FormEvent) {
-    e.preventDefault()
-    setError(null)
-    setLoading(true)
+    e.preventDefault();
+    setError(null);
+    setLoading(true);
     try {
-      await login(username, password)
-      navigate('/', { replace: true })
+      await login(username, password);
+      navigate("/", { replace: true });
     } catch (err) {
-      setError(err instanceof ApiError ? err.message : 'Login failed. Please try again.')
+      setError(
+        err instanceof ApiError
+          ? err.message
+          : "Login failed. Please try again.",
+      );
     } finally {
-      setLoading(false)
+      setLoading(false);
     }
   }
 
   return (
     <Box
       style={{
-        minHeight: '100vh',
-        background: 'linear-gradient(135deg, #8d1b3d 0%, #520d23 100%)',
+        minHeight: "100vh",
+        background: "linear-gradient(135deg, #8d1b3d 0%, #520d23 100%)",
       }}
     >
       <Center mih="100vh" p="md">
@@ -62,7 +66,11 @@ export function LoginPage() {
             </Stack>
 
             {error && (
-              <Alert color="red" variant="light" icon={<AlertCircle size={16} />}>
+              <Alert
+                color="red"
+                variant="light"
+                icon={<AlertCircle size={16} />}
+              >
                 {error}
               </Alert>
             )}
@@ -88,7 +96,13 @@ export function LoginPage() {
                   onChange={(e) => setPassword(e.currentTarget.value)}
                   required
                 />
-                <Button type="submit" size="md" loading={loading} fullWidth mt="xs">
+                <Button
+                  type="submit"
+                  size="md"
+                  loading={loading}
+                  fullWidth
+                  mt="xs"
+                >
                   Sign in
                 </Button>
               </Stack>
@@ -97,5 +111,5 @@ export function LoginPage() {
         </Paper>
       </Center>
     </Box>
-  )
+  );
 }

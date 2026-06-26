@@ -13,7 +13,9 @@
 .card {
   background: linear-gradient(180deg, #fff, #fbf8f7);
   border: 1px solid #efe6ea;
-  transition: transform 0.25s ease, box-shadow 0.25s ease;
+  transition:
+    transform 0.25s ease,
+    box-shadow 0.25s ease;
   padding: 1.4rem;
 }
 

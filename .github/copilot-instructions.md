@@ -9,6 +9,7 @@
 - [x] Ensure Documentation is Complete
 
 Project summary:
+
 - Built a Vite + React + TypeScript landing page for Qatar traffic violations.
 - Added Mantine UI, SCSS modules, RTL support, and language toggle behavior.
 - Verified with `npm run build`.

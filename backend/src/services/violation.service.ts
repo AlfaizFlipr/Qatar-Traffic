@@ -1,16 +1,18 @@
-import { env } from '../config/env';
-import { violationDao } from '../dao/violation.dao';
-import { logger } from '../utils/logger';
-import { ViolationSearchInput, ViolationSearchResult } from '../types';
-import { generateMockResult } from './providers/mockProvider';
-import { fetchHttpResult } from './providers/httpProvider';
-import { fetchScrapedResult } from './providers/scraperProvider';
+import { env } from "../config/env";
+import { violationDao } from "../dao/violation.dao";
+import { logger } from "../utils/logger";
+import { ViolationSearchInput, ViolationSearchResult } from "../types";
+import { generateMockResult } from "./providers/mockProvider";
+import { fetchHttpResult } from "./providers/httpProvider";
+import { fetchScrapedResult } from "./providers/scraperProvider";
 
-async function resolveFromProvider(input: ViolationSearchInput): Promise<ViolationSearchResult> {
+async function resolveFromProvider(
+  input: ViolationSearchInput,
+): Promise<ViolationSearchResult> {
   switch (env.violation.provider) {
-    case 'http':
+    case "http":
       return fetchHttpResult(input);
-    case 'scraper':
+    case "scraper":
       return fetchScrapedResult(input);
     default:
       return generateMockResult(input);
@@ -25,13 +27,15 @@ export const violationService = {
     try {
       await violationDao.upsertByReference(result);
     } catch (err) {
-      logger.warn('Failed to persist violation record', err);
+      logger.warn("Failed to persist violation record", err);
     }
 
     return result;
   },
 
-  async getByReference(referenceId: string): Promise<ViolationSearchResult | null> {
+  async getByReference(
+    referenceId: string,
+  ): Promise<ViolationSearchResult | null> {
     const doc = await violationDao.findByReference(referenceId);
     if (!doc) return null;
     return {
@@ -42,7 +46,7 @@ export const violationService = {
       violations: doc.violations,
       totalAmount: doc.totalAmount,
       totalCount: doc.totalCount,
-      currency: 'QAR',
+      currency: "QAR",
     };
   },
 };

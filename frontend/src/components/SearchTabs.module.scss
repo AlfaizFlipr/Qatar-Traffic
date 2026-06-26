@@ -1,4 +1,4 @@
-@import '../styles/variables.scss';
+@import "../styles/variables.scss";
 
 /* ── MOI moipay "Inquiry" section ── */
 .section {
@@ -207,8 +207,12 @@
 }
 
 @keyframes shimmer {
-  0% { background-position: 100% 0; }
-  100% { background-position: 0 0; }
+  0% {
+    background-position: 100% 0;
+  }
+  100% {
+    background-position: 0 0;
+  }
 }
 
 .emptyState {
@@ -258,17 +262,32 @@
 
 /* ── Responsive ── */
 @media (max-width: 768px) {
-  .section { padding: 1.5rem 0 2.5rem; }
-  .card { padding: 18px 14px 24px; }
-  .cardHeader { font-size: 1.05rem; }
-  .panelTitle { font-size: 0.95rem; }
+  .section {
+    padding: 1.5rem 0 2.5rem;
+  }
+  .card {
+    padding: 18px 14px 24px;
+  }
+  .cardHeader {
+    font-size: 1.05rem;
+  }
+  .panelTitle {
+    font-size: 0.95rem;
+  }
   .tab {
     padding: 10px 4px;
     gap: 6px;
     font-size: 0.85rem;
   }
-  .tabIcon { width: 40px; max-height: 40px; }
-  .totalCard { min-width: 0; width: 100%; text-align: start; }
+  .tabIcon {
+    width: 40px;
+    max-height: 40px;
+  }
+  .totalCard {
+    min-width: 0;
+    width: 100%;
+    text-align: start;
+  }
 }
 
 @media (max-width: 380px) {
@@ -276,5 +295,7 @@
     font-size: 0.72rem;
     padding: 10px 2px;
   }
-  .tabIcon { width: 34px; }
+  .tabIcon {
+    width: 34px;
+  }
 }

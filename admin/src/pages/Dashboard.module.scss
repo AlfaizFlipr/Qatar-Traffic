@@ -1,0 +1,162 @@
+.page {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+/* ── Stat cards ── */
+.statGrid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 16px;
+
+  @media (max-width: 1200px) {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  @media (max-width: 600px) {
+    grid-template-columns: 1fr;
+  }
+}
+
+.statCard {
+  background: #fff;
+  border-radius: 16px;
+  border: 1px solid #e2e8f0;
+  padding: 20px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+}
+
+.statLabel {
+  margin: 0 0 8px;
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: #64748b;
+}
+
+.statValue {
+  margin: 0 0 14px;
+  font-size: 1.875rem;
+  font-weight: 700;
+  color: #0f172a;
+  line-height: 1;
+}
+
+.statAccent {
+  height: 4px;
+  width: 48px;
+  border-radius: 9999px;
+}
+
+/* ── Table card ── */
+.card {
+  background: #fff;
+  border-radius: 16px;
+  border: 1px solid #e2e8f0;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+  overflow: hidden;
+}
+
+.cardHead {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 20px;
+  border-bottom: 1px solid #e2e8f0;
+}
+
+.cardTitle {
+  margin: 0;
+  font-size: 1rem;
+  font-weight: 600;
+  color: #0f172a;
+}
+
+.viewAll {
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: #8b1a3a;
+  text-decoration: none;
+
+  &:hover {
+    text-decoration: underline;
+  }
+}
+
+/* ── Table ── */
+.tableWrap {
+  overflow-x: auto;
+}
+
+.table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.875rem;
+
+  th {
+    padding: 10px 16px;
+    background: #f8fafc;
+    color: #64748b;
+    font-size: 0.7rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    text-align: left;
+    white-space: nowrap;
+    border-bottom: 1px solid #e2e8f0;
+  }
+
+  td {
+    padding: 12px 16px;
+    color: #334155;
+    border-bottom: 1px solid #f1f5f9;
+    white-space: nowrap;
+  }
+
+  tr:last-child td {
+    border-bottom: none;
+  }
+
+  tbody tr:hover td {
+    background: #f8fafc;
+    cursor: pointer;
+  }
+}
+
+.mono {
+  font-family: "Courier New", monospace;
+  font-weight: 600;
+  color: #8b1a3a;
+  font-size: 0.8rem;
+}
+
+.bold {
+  font-weight: 700;
+  color: #0f172a;
+}
+
+.sub {
+  font-size: 0.75rem;
+  color: #94a3b8;
+  margin-top: 2px;
+}
+
+.muted {
+  color: #94a3b8;
+  font-size: 0.8rem;
+}
+
+.pill {
+  display: inline-flex;
+  padding: 3px 10px;
+  border-radius: 9999px;
+  font-size: 0.73rem;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.emptyCell {
+  text-align: center !important;
+  color: #94a3b8 !important;
+  padding: 48px 16px !important;
+}

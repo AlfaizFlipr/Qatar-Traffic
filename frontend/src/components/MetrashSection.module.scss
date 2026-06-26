@@ -1,4 +1,4 @@
-@import '../styles/variables.scss';
+@import "../styles/variables.scss";
 
 $navy: $primary-dark;
 
@@ -98,14 +98,14 @@ $navy: $primary-dark;
 */
 .carouselContainer {
   display: flex;
-  flex-direction: row;  /* ← the core fix: slides in a horizontal row */
+  flex-direction: row; /* ← the core fix: slides in a horizontal row */
   height: 100%;
   align-items: stretch;
 }
 
 /* ── Individual slide ── */
 .slide {
-  flex: 0 0 100%;       /* each slide = exactly 100% of viewport width */
+  flex: 0 0 100%; /* each slide = exactly 100% of viewport width */
   height: 100%;
   display: flex;
   align-items: center;
@@ -161,7 +161,10 @@ $navy: $primary-dark;
   padding: 10px;
   display: flex;
   width: 120px;
-  transition: box-shadow 0.15s ease, transform 0.15s ease, border-color 0.15s ease;
+  transition:
+    box-shadow 0.15s ease,
+    transform 0.15s ease,
+    border-color 0.15s ease;
 
   &:hover {
     border-color: $teal;

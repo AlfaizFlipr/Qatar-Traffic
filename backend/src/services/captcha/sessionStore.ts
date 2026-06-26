@@ -1,7 +1,7 @@
-import { ViolationSearchInput } from '../../types';
-import { logger } from '../../utils/logger';
+import { ViolationSearchInput } from "../../types";
+import { logger } from "../../utils/logger";
 
-export type SessionMode = 'simulated' | 'live';
+export type SessionMode = "simulated" | "live";
 
 export interface CaptchaSession {
   id: string;
@@ -25,8 +25,11 @@ class SessionStore {
     setInterval(() => this.sweep(), 60 * 1000).unref?.();
   }
 
-  create(session: Omit<CaptchaSession, 'expiresAt'>): CaptchaSession {
-    const full: CaptchaSession = { ...session, expiresAt: Date.now() + SESSION_TTL_MS };
+  create(session: Omit<CaptchaSession, "expiresAt">): CaptchaSession {
+    const full: CaptchaSession = {
+      ...session,
+      expiresAt: Date.now() + SESSION_TTL_MS,
+    };
     this.sessions.set(full.id, full);
     return full;
   }
@@ -49,7 +52,7 @@ class SessionStore {
       try {
         await s.context.close();
       } catch (err) {
-        logger.warn('Failed closing context for session ' + id, err);
+        logger.warn("Failed closing context for session " + id, err);
       }
     }
   }

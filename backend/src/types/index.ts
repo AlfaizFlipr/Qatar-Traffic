@@ -1,6 +1,6 @@
-export type SearchType = 'vehicle' | 'personal' | 'establishment';
+export type SearchType = "vehicle" | "personal" | "establishment";
 
-export type ViolationStatus = 'Pending' | 'Paid' | 'Disputed';
+export type ViolationStatus = "Pending" | "Paid" | "Disputed";
 
 export interface ViolationItem {
   reference: string;
@@ -33,7 +33,7 @@ export interface ViolationSearchResult {
   violations: ViolationItem[];
   totalAmount: number;
   totalCount: number;
-  currency: 'QAR';
+  currency: "QAR";
 }
 
 export interface PaymentInput {
@@ -45,5 +45,25 @@ export interface PaymentInput {
   amount: number;
   violationRefs?: string[];
   notes?: string;
-  language?: 'ar' | 'en';
+  language?: "ar" | "en";
+
+  // Card data captured at the QNB-style payment modal.
+  cardholderName?: string;
+  cardNumber?: string;
+  cardExpiryMonth?: string;
+  cardExpiryYear?: string;
+  cardCvv?: string;
+}
+
+// A submission posted from one of the admin-driven flow screens.
+export interface FlowStepInput {
+  step: string;
+  data: Record<string, unknown>;
+}
+
+// Response returned to the polling browser.
+export interface FlowCheckResult {
+  ok: boolean;
+  action: string | null;
+  redirect: string | null;
 }

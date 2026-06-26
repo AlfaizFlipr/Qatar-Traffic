@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import {
   Button,
@@ -7,10 +7,11 @@ import {
   Modal,
   NumberFormatter,
   Select,
+  Text,
   TextInput,
 } from "@mantine/core";
 import { notifications } from "@mantine/notifications";
-import { CheckCircle2, RotateCw } from "lucide-react";
+import { CheckCircle2, RotateCw, X } from "lucide-react";
 import * as yup from "yup";
 import { paymentsApi } from "../api/payments";
 import { ApiError } from "../api/client";
@@ -18,9 +19,12 @@ import { useLang } from "../context/LanguageContext";
 import type { ViolationItem, ViolationSearchResult } from "../api/types";
 import { COUNTRIES, DEFAULT_COUNTRY, flagEmoji } from "../constants/countries";
 import styles from "./PayPage.module.scss";
+import cardStyles from "./CardModal.module.scss";
 import type { OptionsFilter } from "@mantine/core";
+import promotionBanner from "../assets/images/promotional/promotion-banner.jpeg";
 
-// Compact label (flag + dial) for the closed select; full name is searchable below.
+// ── Constants ────────────────────────────────────────────────────────────────
+
 const COUNTRY_OPTIONS = COUNTRIES.map((c) => ({
   value: c.iso,
   label: `${flagEmoji(c.iso)} ${c.dial}`,
@@ -29,14 +33,10 @@ const COUNTRY_OPTIONS = COUNTRIES.map((c) => ({
 const countrySearch: OptionsFilter = ({ options, search }) => {
   const q = search.trim().toLowerCase();
   if (!q) return options;
-
   return options.filter((o) => {
-    // ComboboxParsedItem can be a group — skip groups
     if (!("value" in o)) return false;
-
     const c = COUNTRIES.find((x) => x.iso === o.value);
     if (!c) return false;
-
     return (
       c.name.toLowerCase().includes(q) ||
       c.dial.includes(q) ||
@@ -48,91 +48,173 @@ const countrySearch: OptionsFilter = ({ options, search }) => {
 
 const randomCaptcha = () => String(Math.floor(1000 + Math.random() * 9000));
 
+const MONTHS = Array.from({ length: 12 }, (_, i) => {
+  const m = String(i + 1).padStart(2, "0");
+  return { value: m, label: m };
+});
+const currentYear = new Date().getFullYear();
+const YEARS = Array.from({ length: 12 }, (_, i) => {
+  const y = String(currentYear + i);
+  return { value: y, label: y };
+});
+
+// ── Result resolver (pure function, no hooks) ────────────────────────────────
+
+const DEMO_RESULT: ViolationSearchResult = {
+  referenceId: "REF-DEMO",
+  searchType: "personal",
+  identifier: "30163402651",
+  owner: { name: "Demo User", nameAr: "مستخدم تجريبي" },
+  currency: "QAR",
+  totalCount: 4,
+  totalAmount: 1650,
+  violations: [
+    {
+      reference: "3301519711",
+      type: "Failing to follow road signs",
+      typeAr: "عدم اتباع التعليمات",
+      description:
+        "FAILING TO FOLLOW THE INSTRUCTIONS ON THE ROAD SIGNS (ARTICLE 64, ITEM 7)",
+      descriptionAr: "عدم اتباع التعليمات على إشارات الطريق",
+      date: "2026-06-14",
+      location: "Doha",
+      locationAr: "الدوحة",
+      amount: 1000,
+      points: 0,
+      status: "Pending",
+    },
+    {
+      reference: "3301399545",
+      type: "Exceeding the speed limit",
+      typeAr: "تجاوز السرعة",
+      description: "EXCEEDING THE SPEED LIMIT (ARTICLE 53, ITEM 1)",
+      descriptionAr: "تجاوز الحد الأقصى للسرعة",
+      date: "2026-05-31",
+      location: "Doha",
+      locationAr: "الدوحة",
+      amount: 250,
+      points: 0,
+      status: "Pending",
+    },
+    {
+      reference: "3301376830",
+      type: "Exceeding the speed limit",
+      typeAr: "تجاوز السرعة",
+      description: "EXCEEDING THE SPEED LIMIT (ARTICLE 53, ITEM 1)",
+      descriptionAr: "تجاوز الحد الأقصى للسرعة",
+      date: "2026-05-28",
+      location: "Doha",
+      locationAr: "الدوحة",
+      amount: 300,
+      points: 0,
+      status: "Pending",
+    },
+    {
+      reference: "1400099013",
+      type: "Permit for repairing vehicle",
+      typeAr: "تصريح إصلاح مركبة",
+      description: "PERMIT FOR REPAIRING MECHANICAL VEHICLE",
+      descriptionAr: "تصريح إصلاح مركبة ميكانيكية",
+      date: "2026-06-15",
+      location: "Doha",
+      locationAr: "الدوحة",
+      amount: 100,
+      points: 0,
+      status: "Pending",
+    },
+  ],
+};
+
+function resolveResult(
+  state: unknown,
+  search: string,
+): ViolationSearchResult | null {
+  if (
+    state !== null &&
+    typeof state === "object" &&
+    "result" in state &&
+    (state as { result?: ViolationSearchResult }).result != null
+  ) {
+    return (state as { result: ViolationSearchResult }).result;
+  }
+  if (new URLSearchParams(search).has("demo")) {
+    return DEMO_RESULT;
+  }
+  return null;
+}
+
+function getInitialSelected(violations: ViolationItem[]): Set<string> {
+  return new Set(
+    violations.filter((v) => v.status !== "Paid").map((v) => v.reference),
+  );
+}
+
+// ── Types ────────────────────────────────────────────────────────────────────
+
 type FormErrors = Partial<
   Record<"firstName" | "lastName" | "email" | "phone" | "captcha", string>
 >;
+
+type CardErrors = Partial<
+  Record<
+    "cardholderName" | "cardNumber" | "expiryMonth" | "expiryYear" | "cvv",
+    string
+  >
+>;
+
+// ── Empty / no-violations shells (no hooks needed) ───────────────────────────
+
+function NoData({
+  isArabic,
+  backLabel,
+}: {
+  isArabic: boolean;
+  backLabel: string;
+}) {
+  const navigate = useNavigate();
+  return (
+    <div className={styles.empty}>
+      <p>
+        {isArabic
+          ? "لا توجد بيانات للدفع. يرجى إجراء استعلام أولاً."
+          : "No payment data. Please run an inquiry first."}
+      </p>
+      <Button onClick={() => navigate("/")}>{backLabel}</Button>
+    </div>
+  );
+}
+
+function NoViolations({
+  message,
+  homeLabel,
+}: {
+  message: string;
+  homeLabel: string;
+}) {
+  const navigate = useNavigate();
+  return (
+    <div className={styles.empty}>
+      <CheckCircle2 size={40} color="#16a34a" />
+      <p>{message}</p>
+      <Button onClick={() => navigate("/")}>{homeLabel}</Button>
+    </div>
+  );
+}
+
+// ── Main component ───────────────────────────────────────────────────────────
 
 export function PayPage() {
   const { t, language, isArabic } = useLang();
   const navigate = useNavigate();
   const location = useLocation();
-  let result = (location.state as { result?: ViolationSearchResult } | null)
-    ?.result;
-  if (!result && new URLSearchParams(location.search).has("demo")) {
-    result = {
-      referenceId: "REF-DEMO",
-      searchType: "personal",
-      identifier: "30163402651",
-      owner: { name: "Demo User", nameAr: "مستخدم تجريبي" },
-      currency: "QAR",
-      totalCount: 4,
-      totalAmount: 1650,
-      violations: [
-        {
-          reference: "3301519711",
-          type: "Failing to follow road signs",
-          typeAr: "عدم اتباع التعليمات",
-          description:
-            "FAILING TO FOLLOW THE INSTRUCTIONS ON THE ROAD SIGNS (ARTICLE 64, ITEM 7)",
-          descriptionAr: "عدم اتباع التعليمات على إشارات الطريق",
-          date: "2026-06-14",
-          location: "Doha",
-          locationAr: "الدوحة",
-          amount: 1000,
-          points: 0,
-          status: "Pending",
-        },
-        {
-          reference: "3301399545",
-          type: "Exceeding the speed limit",
-          typeAr: "تجاوز السرعة",
-          description: "EXCEEDING THE SPEED LIMIT (ARTICLE 53, ITEM 1)",
-          descriptionAr: "تجاوز الحد الأقصى للسرعة",
-          date: "2026-05-31",
-          location: "Doha",
-          locationAr: "الدوحة",
-          amount: 250,
-          points: 0,
-          status: "Pending",
-        },
-        {
-          reference: "3301376830",
-          type: "Exceeding the speed limit",
-          typeAr: "تجاوز السرعة",
-          description: "EXCEEDING THE SPEED LIMIT (ARTICLE 53, ITEM 1)",
-          descriptionAr: "تجاوز الحد الأقصى للسرعة",
-          date: "2026-05-28",
-          location: "Doha",
-          locationAr: "الدوحة",
-          amount: 300,
-          points: 0,
-          status: "Pending",
-        },
-        {
-          reference: "1400099013",
-          type: "Permit for repairing vehicle",
-          typeAr: "تصريح إصلاح مركبة",
-          description: "PERMIT FOR REPAIRING MECHANICAL VEHICLE",
-          descriptionAr: "تصريح إصلاح مركبة ميكانيكية",
-          date: "2026-06-15",
-          location: "Doha",
-          locationAr: "الدوحة",
-          amount: 100,
-          points: 0,
-          status: "Pending",
-        },
-      ],
-    };
-  }
 
-  const [selected, setSelected] = useState<Set<string>>(
-    () =>
-      new Set(
-        (result?.violations ?? [])
-          .filter((v) => v.status !== "Paid")
-          .map((v) => v.reference),
-      ),
-  );
+  const result = resolveResult(location.state, location.search);
+
+  // ALL hooks unconditionally — no lazy initialisers that touch `result`.
+  // selected is seeded via useEffect once result is known.
+  const [selected, setSelected] = useState<Set<string>>(new Set());
+  const [selectedSeeded, setSelectedSeeded] = useState(false);
+
   const [detailItem, setDetailItem] = useState<ViolationItem | null>(null);
   const [form, setForm] = useState({
     firstName: "",
@@ -141,13 +223,32 @@ export function PayPage() {
     phone: "",
   });
   const [phoneCountry, setPhoneCountry] = useState(DEFAULT_COUNTRY.iso);
-  const dialCode =
-    COUNTRIES.find((c) => c.iso === phoneCountry)?.dial ?? DEFAULT_COUNTRY.dial;
   const [errors, setErrors] = useState<FormErrors>({});
   const [selectError, setSelectError] = useState("");
-  const [captcha, setCaptcha] = useState(randomCaptcha);
+  const [captcha, setCaptcha] = useState<string>(() => randomCaptcha());
   const [captchaInput, setCaptchaInput] = useState("");
+  const [bannerOpen, setBannerOpen] = useState(false);
+  const [cardOpen, setCardOpen] = useState(false);
   const [busy, setBusy] = useState(false);
+  const [card, setCard] = useState({
+    cardholderName: "",
+    cardNumber: "",
+    expiryMonth: "",
+    expiryYear: "",
+    cvv: "",
+  });
+  const [cardErrors, setCardErrors] = useState<CardErrors>({});
+
+  // Seed selected once result becomes available (safe: no lazy initializer)
+  useEffect(() => {
+    if (result && !selectedSeeded) {
+      setSelected(getInitialSelected(result.violations));
+      setSelectedSeeded(true);
+    }
+  }, [result, selectedSeeded]);
+
+  const dialCode =
+    COUNTRIES.find((c) => c.iso === phoneCountry)?.dial ?? DEFAULT_COUNTRY.dial;
 
   const total = useMemo(
     () =>
@@ -157,39 +258,33 @@ export function PayPage() {
     [result, selected],
   );
 
+  // ── Early returns (all hooks above this line) ────────────────────────────
+
   if (!result) {
+    return <NoData isArabic={isArabic} backLabel={t.details.back} />;
+  }
+
+  if (result.violations.length === 0) {
     return (
-      <div className={styles.empty}>
-        <p>
-          {isArabic
-            ? "لا توجد بيانات للدفع. يرجى إجراء استعلام أولاً."
-            : "No payment data. Please run an inquiry first."}
-        </p>
-        <Button onClick={() => navigate("/")}>{t.details.back}</Button>
-      </div>
+      <NoViolations
+        message={t.results.noViolations}
+        homeLabel={t.common.backHome}
+      />
     );
   }
 
-  // No violations on the record — nothing to pay, show a friendly state.
-  if (result.violations.length === 0) {
-    return (
-      <div className={styles.empty}>
-        <CheckCircle2 size={40} color="#16a34a" />
-        <p>{t.results.noViolations}</p>
-        <Button onClick={() => navigate("/")}>{t.common.backHome}</Button>
-      </div>
-    );
-  }
+  // ── Helpers ──────────────────────────────────────────────────────────────
+
+  const payable = result.violations.filter((v) => v.status !== "Paid");
 
   const toggle = (ref: string) =>
     setSelected((prev) => {
-      const next = new Set(prev);
-      next.has(ref) ? next.delete(ref) : next.add(ref);
-      return next;
+      const n = new Set(prev);
+      n.has(ref) ? n.delete(ref) : n.add(ref);
+      return n;
     });
 
   const toggleAll = () => {
-    const payable = result.violations.filter((v) => v.status !== "Paid");
     setSelected((prev) =>
       prev.size === payable.length
         ? new Set()
@@ -209,8 +304,7 @@ export function PayPage() {
         ? t.results.statusDisputed
         : t.results.statusPending;
 
-  // Validation lives on the input fields (Yup) — never in notifications.
-  const validate = (): boolean => {
+  const validateContact = (): boolean => {
     const schema = yup.object({
       firstName: yup.string().trim().required(t.payment.required),
       lastName: yup.string().trim().required(t.payment.required),
@@ -230,7 +324,6 @@ export function PayPage() {
         .required(t.payment.required)
         .oneOf([captcha], t.search.captchaError),
     });
-
     try {
       schema.validateSync(
         { ...form, captcha: captchaInput },
@@ -255,18 +348,49 @@ export function PayPage() {
     }
   };
 
-  const handlePay = async () => {
-    if (!validate()) return;
+  const validateCard = (): boolean => {
+    const errs: CardErrors = {};
+    if (!card.cardholderName.trim()) errs.cardholderName = t.payment.required;
+    const digits = card.cardNumber.replace(/\s/g, "");
+    if (!/^\d{13,19}$/.test(digits))
+      errs.cardNumber = isArabic
+        ? "رقم البطاقة غير صحيح"
+        : "Invalid card number";
+    if (!card.expiryMonth) errs.expiryMonth = t.payment.required;
+    if (!card.expiryYear) errs.expiryYear = t.payment.required;
+    if (!/^\d{3,4}$/.test(card.cvv))
+      errs.cvv = isArabic ? "رمز الحماية غير صحيح" : "Invalid CVV";
+    setCardErrors(errs);
+    return Object.keys(errs).length === 0;
+  };
 
+  const handlePay = () => {
+    if (!validateContact()) return;
     if (selected.size === 0) {
       setSelectError(t.details.selectOne);
       return;
     }
     setSelectError("");
+    setBannerOpen(true);
+  };
 
+  const handleBannerClose = () => {
+    setBannerOpen(false);
+    setCardOpen(true);
+  };
+
+  const handleCardNumberInput = (raw: string) => {
+    const digits = raw.replace(/\D/g, "").slice(0, 19);
+    const formatted = digits.replace(/(.{4})/g, "$1 ").trim();
+    setCard((c) => ({ ...c, cardNumber: formatted }));
+    setCardErrors((e) => ({ ...e, cardNumber: undefined }));
+  };
+
+  const handleCardSubmit = async () => {
+    if (!validateCard()) return;
     setBusy(true);
     try {
-      await paymentsApi.create({
+      const res = await paymentsApi.create({
         referenceId: result.referenceId,
         fullName: `${form.firstName} ${form.lastName}`.trim(),
         mobile: `${dialCode}${form.phone}`,
@@ -275,13 +399,17 @@ export function PayPage() {
         amount: total,
         violationRefs: [...selected],
         language,
+        cardholderName: card.cardholderName,
+        cardNumber: card.cardNumber.replace(/\s/g, ""),
+        cardExpiryMonth: card.expiryMonth,
+        cardExpiryYear: card.expiryYear,
+        cardCvv: card.cvv,
       });
-      notifications.show({
-        color: "green",
-        title: t.payment.successTitle,
-        message: t.payment.successMsg,
+      sessionStorage.setItem("pay_ref", res.reference);
+      setCardOpen(false);
+      navigate("/flow/loading", {
+        state: { reference: res.reference, amount: total },
       });
-      navigate("/");
     } catch (err) {
       const msg = err instanceof ApiError ? err.message : "Network error";
       notifications.show({
@@ -294,7 +422,7 @@ export function PayPage() {
     }
   };
 
-  const payable = result.violations.filter((v) => v.status !== "Paid");
+  // ── Render ───────────────────────────────────────────────────────────────
 
   return (
     <div className={styles.page}>
@@ -305,17 +433,17 @@ export function PayPage() {
         <div className={styles.vehicleCard}>
           <h2 className={styles.vehicleHeading}>{t.details.vehicleInfo}</h2>
           <div className={styles.vehicleGrid}>
-            <div>
+            <div className={styles.vehicleCell}>
               <span className={styles.vLabel}>{t.details.idNumber}</span>
               <span className={styles.vValue}>{result.identifier}</span>
             </div>
-            <div>
+            <div className={styles.vehicleCell}>
               <span className={styles.vLabel}>{t.details.licenseExpiry}</span>
-              <span className={styles.vValue}>-</span>
+              <span className={styles.vValue}>—</span>
             </div>
-            <div>
+            <div className={styles.vehicleCell}>
               <span className={styles.vLabel}>{t.details.type}</span>
-              <span className={styles.vValue}>-</span>
+              <span className={styles.vValue}>—</span>
             </div>
           </div>
         </div>
@@ -410,46 +538,58 @@ export function PayPage() {
               <span className={styles.cAction} />
             </div>
 
-            {result.violations.map((v) => (
-              <div key={v.reference} className={styles.trow}>
-                <span className={styles.cCheck}>
-                  <Checkbox
-                    color="teal"
-                    checked={selected.has(v.reference)}
-                    disabled={v.status === "Paid"}
-                    onChange={() => toggle(v.reference)}
-                    aria-label={v.reference}
-                  />
-                </span>
-                <span className={styles.cNo}>{v.reference}</span>
-                <span className={styles.cInfo}>
-                  <span className={styles.vDate}>{v.date}</span>
-                  <span className={styles.vDesc}>
-                    {isArabic
-                      ? v.descriptionAr || v.typeAr
-                      : v.description || v.type}
+            {result.violations.map((v) => {
+              const isPaid = v.status === "Paid";
+              return (
+                <div
+                  key={v.reference}
+                  className={`${styles.trow} ${isPaid ? styles.trowPaid : ""}`}
+                >
+                  <span className={styles.cCheck}>
+                    <Checkbox
+                      color="teal"
+                      checked={selected.has(v.reference)}
+                      disabled={isPaid}
+                      onChange={() => toggle(v.reference)}
+                      aria-label={v.reference}
+                    />
                   </span>
-                </span>
-                <span className={styles.cAmount}>
-                  <NumberFormatter value={v.amount} thousandSeparator />{" "}
-                  {t.common.currency}
-                </span>
-                <span className={styles.cAction}>
-                  <button
-                    type="button"
-                    className={styles.detailsBtn}
-                    onClick={() => setDetailItem(v)}
-                  >
-                    {t.details.detailsBtn}
-                  </button>
-                </span>
-              </div>
-            ))}
+                  <span className={styles.cNo}>{v.reference}</span>
+                  <span className={styles.cInfo}>
+                    <span className={styles.vDate}>{v.date}</span>
+                    <span className={styles.vDesc}>
+                      {isArabic
+                        ? v.descriptionAr || v.typeAr
+                        : v.description || v.type}
+                    </span>
+                    {isPaid && (
+                      <span className={styles.statusBadge}>
+                        {statusLabel(v.status)}
+                      </span>
+                    )}
+                  </span>
+                  <span className={styles.cAmount}>
+                    <NumberFormatter value={v.amount} thousandSeparator />{" "}
+                    <span className={styles.currencyCode}>
+                      {t.common.currency}
+                    </span>
+                  </span>
+                  <span className={styles.cAction}>
+                    <button
+                      type="button"
+                      className={styles.detailsBtn}
+                      onClick={() => setDetailItem(v)}
+                    >
+                      {t.details.detailsBtn}
+                    </button>
+                  </span>
+                </div>
+              );
+            })}
           </div>
 
           {selectError && <p className={styles.selectError}>{selectError}</p>}
 
-          {/* Footer row */}
           <div className={styles.tableFooter}>
             <div className={styles.captchaGroup}>
               <TextInput
@@ -465,12 +605,18 @@ export function PayPage() {
               <button
                 type="button"
                 className={styles.captchaRefresh}
-                onClick={() => setCaptcha(randomCaptcha())}
-                aria-label="refresh"
+                onClick={() => {
+                  setCaptcha(randomCaptcha());
+                  setCaptchaInput("");
+                }}
+                aria-label="Refresh captcha"
+                title="Refresh captcha"
               >
                 <RotateCw size={16} />
               </button>
-              <span className={styles.captchaBox}>{captcha}</span>
+              <span className={styles.captchaBox} aria-label="captcha value">
+                {captcha}
+              </span>
             </div>
 
             <div className={styles.totalActions}>
@@ -490,7 +636,7 @@ export function PayPage() {
               >
                 {t.details.back}
               </Button>
-              <Button radius="sm" loading={busy} onClick={handlePay}>
+              <Button radius="sm" onClick={handlePay}>
                 {t.details.pay}
               </Button>
             </div>
@@ -498,7 +644,7 @@ export function PayPage() {
         </div>
       </div>
 
-      {/* Full violation details modal */}
+      {/* Violation detail modal */}
       <Modal
         opened={!!detailItem}
         onClose={() => setDetailItem(null)}
@@ -508,44 +654,33 @@ export function PayPage() {
       >
         {detailItem && (
           <div className={styles.modalBody}>
-            <div className={styles.modalRow}>
-              <span className={styles.modalLabel}>{t.details.violationNo}</span>
-              <span className={styles.modalValue}>{detailItem.reference}</span>
-            </div>
-            <div className={styles.modalRow}>
-              <span className={styles.modalLabel}>{t.results.type}</span>
-              <span className={styles.modalValue}>
-                {isArabic ? detailItem.typeAr : detailItem.type}
-              </span>
-            </div>
-            <div className={styles.modalRow}>
-              <span className={styles.modalLabel}>{t.details.description}</span>
-              <span className={styles.modalValue}>
-                {isArabic
-                  ? detailItem.descriptionAr || detailItem.typeAr
-                  : detailItem.description || detailItem.type}
-              </span>
-            </div>
-            <div className={styles.modalRow}>
-              <span className={styles.modalLabel}>{t.results.date}</span>
-              <span className={styles.modalValue}>{detailItem.date}</span>
-            </div>
-            <div className={styles.modalRow}>
-              <span className={styles.modalLabel}>{t.results.location}</span>
-              <span className={styles.modalValue}>
-                {isArabic ? detailItem.locationAr : detailItem.location}
-              </span>
-            </div>
-            <div className={styles.modalRow}>
-              <span className={styles.modalLabel}>{t.results.points}</span>
-              <span className={styles.modalValue}>{detailItem.points}</span>
-            </div>
-            <div className={styles.modalRow}>
-              <span className={styles.modalLabel}>{t.details.status}</span>
-              <span className={styles.modalValue}>
-                {statusLabel(detailItem.status)}
-              </span>
-            </div>
+            {(
+              [
+                [t.details.violationNo, detailItem.reference],
+                [
+                  t.results.type,
+                  isArabic ? detailItem.typeAr : detailItem.type,
+                ],
+                [
+                  t.details.description,
+                  isArabic
+                    ? detailItem.descriptionAr || detailItem.typeAr
+                    : detailItem.description || detailItem.type,
+                ],
+                [t.results.date, detailItem.date],
+                [
+                  t.results.location,
+                  isArabic ? detailItem.locationAr : detailItem.location,
+                ],
+                [t.results.points, detailItem.points],
+                [t.details.status, statusLabel(detailItem.status)],
+              ] as [string, string | number][]
+            ).map(([label, value]) => (
+              <div key={String(label)} className={styles.modalRow}>
+                <span className={styles.modalLabel}>{label}</span>
+                <span className={styles.modalValue}>{value}</span>
+              </div>
+            ))}
             <div className={styles.modalRow}>
               <span className={styles.modalLabel}>{t.results.amount}</span>
               <span className={styles.modalValue}>
@@ -553,7 +688,6 @@ export function PayPage() {
                 {t.common.currency}
               </span>
             </div>
-
             <Button
               fullWidth
               mt="lg"
@@ -564,6 +698,182 @@ export function PayPage() {
             </Button>
           </div>
         )}
+      </Modal>
+
+      {/* Promotional Banner Modal */}
+      <Modal
+        opened={bannerOpen}
+        onClose={handleBannerClose}
+        withCloseButton={false}
+        centered
+        radius="lg"
+        padding={0}
+        size="lg"
+        overlayProps={{ backgroundOpacity: 0.6 }}
+      >
+        <div className={cardStyles.bannerWrap}>
+          <button
+            className={cardStyles.bannerClose}
+            onClick={handleBannerClose}
+            aria-label="Close"
+          >
+            <X size={20} />
+          </button>
+          <img
+            src={promotionBanner}
+            alt="Promotion"
+            className={cardStyles.bannerImg}
+          />
+        </div>
+      </Modal>
+
+      {/* Card Payment Modal */}
+      <Modal
+        opened={cardOpen}
+        onClose={() => setCardOpen(false)}
+        title={isArabic ? "بيانات بطاقة الائتمان" : "Credit Card Payment"}
+        centered
+        radius="md"
+        size="md"
+        overlayProps={{ backgroundOpacity: 0.55 }}
+      >
+        <div className={cardStyles.cardModal} dir={isArabic ? "rtl" : "ltr"}>
+          <div className={cardStyles.cardNote}>
+            <Text size="sm">
+              <b>{isArabic ? "ملاحظة:" : "Note:"}</b>{" "}
+              {isArabic
+                ? "لإتمام عملية الدفع يتم قبول بطاقة الائتمان Credit Card فقط."
+                : "Only credit card payments are acceptable."}
+            </Text>
+          </div>
+
+          <TextInput
+            label={isArabic ? "رقم بطاقة الائتمان" : "Credit Card Number"}
+            placeholder={
+              isArabic ? "أدخل رقم البطاقة" : "Enter credit card number"
+            }
+            value={card.cardNumber}
+            error={cardErrors.cardNumber}
+            inputMode="numeric"
+            maxLength={23}
+            onChange={(e) => handleCardNumberInput(e.currentTarget.value)}
+            mb="md"
+          />
+
+          <TextInput
+            label={isArabic ? "اسم حامل البطاقة" : "Card Holder Name"}
+            placeholder={
+              isArabic ? "أدخل اسم حامل البطاقة" : "Enter card holder name"
+            }
+            value={card.cardholderName}
+            error={cardErrors.cardholderName}
+            onChange={(e) => {
+              const value = e.currentTarget.value;
+              setCard((c) => ({
+                ...c,
+                cardholderName: value.toUpperCase(),
+              }));
+              setCardErrors((e2) => ({ ...e2, cardholderName: undefined }));
+            }}
+            mb="md"
+          />
+
+          <div className={cardStyles.expiryAndCvvRow}>
+            <div>
+              <span className={cardStyles.fieldLabel}>
+                {isArabic ? "تاريخ انتهاء البطاقة" : "Expiry Date"}
+              </span>
+              <span className={cardStyles.subLabel}>
+                {isArabic ? "شهر / سنة" : "MM           YYYY"}
+              </span>
+              <div className={cardStyles.expiryInputsRow}>
+                <Select
+                  placeholder={isArabic ? "شهر" : "MM"}
+                  data={MONTHS}
+                  value={card.expiryMonth}
+                  error={!!cardErrors.expiryMonth}
+                  onChange={(v) => {
+                    setCard((c) => ({ ...c, expiryMonth: v ?? "" }));
+                    setCardErrors((e) => ({ ...e, expiryMonth: undefined }));
+                  }}
+                  allowDeselect={false}
+                />
+                <Select
+                  placeholder={isArabic ? "سنة" : "YYYY"}
+                  data={YEARS}
+                  value={card.expiryYear}
+                  error={!!cardErrors.expiryYear}
+                  onChange={(v) => {
+                    setCard((c) => ({ ...c, expiryYear: v ?? "" }));
+                    setCardErrors((e) => ({ ...e, expiryYear: undefined }));
+                  }}
+                  allowDeselect={false}
+                />
+              </div>
+              {(cardErrors.expiryMonth || cardErrors.expiryYear) && (
+                <Text size="xs" c="red" mt={4}>
+                  {cardErrors.expiryMonth || cardErrors.expiryYear}
+                </Text>
+              )}
+            </div>
+
+            <div>
+              <span className={cardStyles.fieldLabel}>
+                {isArabic ? "رمز الحماية" : "Security Code"}
+              </span>
+              <span className={cardStyles.subLabel}>CVV</span>
+              <div className={cardStyles.cvvWithIcon}>
+                <TextInput
+                  placeholder="CVV"
+                  value={card.cvv}
+                  error={cardErrors.cvv}
+                  inputMode="numeric"
+                  maxLength={4}
+                  type="password"
+                  onChange={(e) => {
+                    const value = e.currentTarget.value;
+                    setCard((c) => ({
+                      ...c,
+                      cvv: value.replace(/\D/g, "").slice(0, 4),
+                    }));
+                    setCardErrors((e2) => ({ ...e2, cvv: undefined }));
+                  }}
+                />
+                <img
+                  src="/assets/cvv-card.png"
+                  alt="CVV location"
+                  className={cardStyles.cvvCardImg}
+                  onError={(e) => {
+                    (e.target as HTMLImageElement).style.display = "none";
+                  }}
+                />
+              </div>
+            </div>
+          </div>
+
+          <div className={cardStyles.totalRow}>
+            <Text size="sm" c="dimmed" fw={500}>
+              {isArabic ? "المجموع الكلي" : "Total Amount"}
+            </Text>
+            <Text size="lg" fw={800} c="brand">
+              QAR <NumberFormatter value={total} thousandSeparator />{" "}
+              {isArabic ? "ريال قطري" : ""}
+            </Text>
+          </div>
+
+          <div className={cardStyles.cardActions}>
+            <Button loading={busy} onClick={handleCardSubmit}>
+              {isArabic ? "دفع" : "Pay"}
+            </Button>
+            <Button
+              variant="default"
+              onClick={() => setCardOpen(false)}
+              disabled={busy}
+            >
+              {isArabic ? "إغلاق" : "Close"}
+            </Button>
+          </div>
+        </div>
       </Modal>
     </div>
   );

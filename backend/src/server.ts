@@ -1,27 +1,34 @@
-import { createApp } from './app';
-import { connectDatabase, disconnectDatabase } from './config/db';
-import { env, isTelegramConfigured } from './config/env';
-import { logger } from './utils/logger';
+import { createApp } from "./app";
+import { connectDatabase, disconnectDatabase } from "./config/db";
+import { env, isTelegramConfigured } from "./config/env";
+import { logger } from "./utils/logger";
 
 async function bootstrap() {
   try {
     await connectDatabase();
   } catch (err) {
-    logger.error('Failed to connect to MongoDB. Is it running? URI=' + env.mongoUri, err);
+    logger.error(
+      "Failed to connect to MongoDB. Is it running? URI=" + env.mongoUri,
+      err,
+    );
     process.exit(1);
   }
 
   const app = createApp();
   const server = app.listen(env.port, () => {
-    logger.info(`API listening on http://localhost:${env.port} (${env.nodeEnv})`);
+    logger.info(
+      `API listening on http://localhost:${env.port} (${env.nodeEnv})`,
+    );
     logger.info(`Violation provider: ${env.violation.provider}`);
-    logger.info(`VPN integration: ${env.vpn.enabled ? 'ENABLED' : 'DISABLED'}`);
+    logger.info(`VPN integration: ${env.vpn.enabled ? "ENABLED" : "DISABLED"}`);
     if (env.vpn.enabled) {
       logger.info(`  - OpenVPN Binary: ${env.vpn.bin}`);
       logger.info(`  - OpenVPN Config: ${env.vpn.config}`);
     }
     if (!isTelegramConfigured) {
-      logger.warn('Telegram is NOT configured — payment relays will be recorded as "failed".');
+      logger.warn(
+        'Telegram is NOT configured — payment relays will be recorded as "failed".',
+      );
     }
   });
 
@@ -33,8 +40,8 @@ async function bootstrap() {
     });
   };
 
-  process.on('SIGINT', () => shutdown('SIGINT'));
-  process.on('SIGTERM', () => shutdown('SIGTERM'));
+  process.on("SIGINT", () => shutdown("SIGINT"));
+  process.on("SIGTERM", () => shutdown("SIGTERM"));
 }
 
 bootstrap();

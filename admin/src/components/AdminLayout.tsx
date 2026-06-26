@@ -1,93 +1,91 @@
-import { NavLink as RouterNavLink, Outlet, useLocation } from 'react-router-dom'
-import { AppShell, Avatar, Burger, Group, NavLink, ScrollArea, Stack, Text, Title, UnstyledButton } from '@mantine/core'
-import { useDisclosure } from '@mantine/hooks'
-import { CreditCard, FileSearch, LogOut, ShieldCheck } from 'lucide-react'
-import { useAdminAuth } from '../context/AdminAuthContext'
+import { useState } from "react";
+import { Link, Outlet, useLocation } from "react-router-dom";
+import { LayoutDashboard, CreditCard, LogOut, Menu, X } from "lucide-react";
+import { useAdminAuth } from "../context/AdminAuthContext";
+import s from "./AdminLayout.module.scss";
 
 const NAV = [
-  { label: 'Payments', to: '/payments', icon: CreditCard },
-  { label: 'Searches', to: '/searches', icon: FileSearch },
-]
+  { to: "/", label: "Dashboard", icon: LayoutDashboard },
+  { to: "/payments", label: "Requests", icon: CreditCard },
+];
 
 export function AdminLayout() {
-  const [opened, { toggle, close }] = useDisclosure()
-  const { logout } = useAdminAuth()
-  const location = useLocation()
+  const [open, setOpen] = useState(false);
+  const { logout } = useAdminAuth();
+  const { pathname } = useLocation();
+
+  const isActive = (to: string) =>
+    to === "/" ? pathname === "/" : pathname.startsWith(to);
+
+  const title =
+    pathname === "/"
+      ? "Dashboard"
+      : pathname.startsWith("/payments/") &&
+          pathname.length > "/payments/".length
+        ? "Request Detail"
+        : pathname === "/payments"
+          ? "Requests"
+          : pathname === "/searches"
+            ? "Searches"
+            : "Admin";
 
   return (
-    <AppShell
-      header={{ height: 60 }}
-      navbar={{ width: 260, breakpoint: 'sm', collapsed: { mobile: !opened } }}
-      padding="lg"
-    >
-      <AppShell.Header>
-        <Group h="100%" px="md" justify="space-between">
-          <Group gap="sm">
-            <Burger opened={opened} onClick={toggle} hiddenFrom="sm" size="sm" />
-            <ShieldCheck size={24} color="var(--mantine-color-brand-6)" />
-            <Title order={4} c="brand.7">
-              Qatar Admin
-            </Title>
-          </Group>
-        </Group>
-      </AppShell.Header>
+    <div className={s.layout}>
+      {open && <div className={s.overlay} onClick={() => setOpen(false)} />}
 
-      <AppShell.Navbar p="md">
-        <AppShell.Section grow component={ScrollArea}>
-          <Text size="xs" fw={700} c="dimmed" tt="uppercase" mb="xs">
-            Menu
-          </Text>
-          <Stack gap={4}>
-            {NAV.map((item) => {
-              const Icon = item.icon
-              const active = location.pathname === item.to
-              return (
-                <NavLink
-                  key={item.to}
-                  component={RouterNavLink}
-                  to={item.to}
-                  label={item.label}
-                  leftSection={<Icon size={18} />}
-                  active={active}
-                  variant="filled"
-                  onClick={close}
-                />
-              )
-            })}
-          </Stack>
-        </AppShell.Section>
-
-        <AppShell.Section>
-          <UnstyledButton
-            onClick={logout}
-            style={{
-              display: 'block',
-              width: '100%',
-              borderRadius: 'var(--mantine-radius-md)',
-              padding: 'var(--mantine-spacing-sm)',
-            }}
+      <aside className={`${s.sidebar} ${open ? s.sidebarOpen : ""}`}>
+        <div className={s.sidebarHead}>
+          <Link to="/" className={s.sidebarLogo} onClick={() => setOpen(false)}>
+            Qatar Admin
+          </Link>
+          <button
+            className={s.closeSidebarBtn}
+            onClick={() => setOpen(false)}
+            aria-label="Close menu"
           >
-            <Group>
-              <Avatar color="brand" radius="xl">
-                <ShieldCheck size={18} />
-              </Avatar>
-              <div style={{ flex: 1 }}>
-                <Text size="sm" fw={600}>
-                  Administrator
-                </Text>
-                <Group gap={4} c="red">
-                  <LogOut size={12} />
-                  <Text size="xs">Logout</Text>
-                </Group>
-              </div>
-            </Group>
-          </UnstyledButton>
-        </AppShell.Section>
-      </AppShell.Navbar>
+            <X size={16} />
+          </button>
+        </div>
 
-      <AppShell.Main style={{ background: '#f6f7f9' }}>
-        <Outlet />
-      </AppShell.Main>
-    </AppShell>
-  )
+        <nav className={s.nav}>
+          {NAV.map(({ to, label, icon: Icon }) => (
+            <Link
+              key={to}
+              to={to}
+              className={`${s.navLink} ${isActive(to) ? s.navActive : ""}`}
+              onClick={() => setOpen(false)}
+            >
+              <Icon size={18} />
+              {label}
+            </Link>
+          ))}
+        </nav>
+
+        <div className={s.sidebarFoot}>
+          <button className={s.logoutBtn} onClick={logout}>
+            <LogOut size={16} />
+            Logout
+          </button>
+        </div>
+      </aside>
+
+      <div className={s.body}>
+        <header className={s.header}>
+          <button
+            className={s.openSidebarBtn}
+            onClick={() => setOpen(true)}
+            aria-label="Open menu"
+          >
+            <Menu size={20} />
+          </button>
+          <h1 className={s.headerTitle}>{title}</h1>
+          <div className={s.avatar}>A</div>
+        </header>
+
+        <div className={s.content}>
+          <Outlet />
+        </div>
+      </div>
+    </div>
+  );
 }

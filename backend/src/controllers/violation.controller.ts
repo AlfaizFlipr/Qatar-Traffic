@@ -1,8 +1,8 @@
-import { Request, Response } from 'express';
-import { asyncHandler } from '../utils/asyncHandler';
-import { sendSuccess, AppError } from '../utils/apiResponse';
-import { violationService } from '../services/violation.service';
-import { captchaService } from '../services/captcha/captcha.service';
+import { Request, Response } from "express";
+import { asyncHandler } from "../utils/asyncHandler";
+import { sendSuccess, AppError } from "../utils/apiResponse";
+import { violationService } from "../services/violation.service";
+import { captchaService } from "../services/captcha/captcha.service";
 
 export const violationController = {
   search: asyncHandler(async (req: Request, res: Response) => {
@@ -24,8 +24,10 @@ export const violationController = {
   }),
 
   getByReference: asyncHandler(async (req: Request, res: Response) => {
-    const result = await violationService.getByReference(req.params.referenceId);
-    if (!result) throw new AppError('Inquiry reference not found', 404);
+    const result = await violationService.getByReference(
+      req.params.referenceId,
+    );
+    if (!result) throw new AppError("Inquiry reference not found", 404);
     return sendSuccess(res, result, 200);
   }),
 };

@@ -1,0 +1,249 @@
+/* ── Full-page flex shell ── */
+.layout {
+  display: flex;
+  height: 100vh;
+  overflow: hidden;
+  font-family:
+    "DM Sans",
+    system-ui,
+    -apple-system,
+    sans-serif;
+}
+
+/* ── Mobile overlay ── */
+.overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 40;
+  background: rgba(15, 23, 42, 0.5);
+
+  @media (min-width: 1024px) {
+    display: none;
+  }
+}
+
+/* ── Sidebar ── */
+.sidebar {
+  width: 280px;
+  flex-shrink: 0;
+  background: #6b1230;
+  display: flex;
+  flex-direction: column;
+  overflow-y: auto;
+  overflow-x: hidden;
+  z-index: 50;
+
+  @media (max-width: 1023px) {
+    position: fixed;
+    inset-y: 0;
+    left: 0;
+    height: 100%;
+    transform: translateX(-100%);
+    transition: transform 0.22s ease-out;
+    box-shadow: 4px 0 28px rgba(0, 0, 0, 0.28);
+  }
+
+  &.sidebarOpen {
+    @media (max-width: 1023px) {
+      transform: translateX(0);
+    }
+  }
+}
+
+.sidebarHead {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  height: 64px;
+  padding: 0 20px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  flex-shrink: 0;
+}
+
+.sidebarLogo {
+  color: #fff;
+  font-size: 1rem;
+  font-weight: 700;
+  text-decoration: none;
+  letter-spacing: -0.01em;
+}
+
+.closeSidebarBtn {
+  display: none;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  background: rgba(255, 255, 255, 0.1);
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  color: #fff;
+  transition: background 0.15s;
+
+  &:hover {
+    background: rgba(255, 255, 255, 0.2);
+  }
+
+  @media (max-width: 1023px) {
+    display: flex;
+  }
+}
+
+.nav {
+  flex: 1;
+  padding: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.navLink {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 12px;
+  border-radius: 8px;
+  color: rgba(255, 255, 255, 0.72);
+  font-size: 0.875rem;
+  font-weight: 500;
+  text-decoration: none;
+  transition:
+    background 0.15s,
+    color 0.15s;
+
+  &:hover {
+    background: rgba(255, 255, 255, 0.1);
+    color: #fff;
+  }
+
+  &.navActive {
+    background: rgba(255, 255, 255, 0.18);
+    color: #fff;
+  }
+}
+
+.pendingBadge {
+  margin-left: auto;
+  background: #e8001c;
+  color: #fff;
+  font-size: 0.7rem;
+  font-weight: 700;
+  padding: 1px 7px;
+  border-radius: 9999px;
+  line-height: 1.6;
+}
+
+.sidebarFoot {
+  padding: 12px;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.logoutBtn {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 12px;
+  border-radius: 8px;
+  color: rgba(255, 255, 255, 0.62);
+  font-size: 0.875rem;
+  font-weight: 500;
+  background: none;
+  border: none;
+  cursor: pointer;
+  width: 100%;
+  text-align: left;
+  transition:
+    background 0.15s,
+    color 0.15s;
+
+  &:hover {
+    background: rgba(255, 255, 255, 0.1);
+    color: #fff;
+  }
+}
+
+/* ── Main body ── */
+.body {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+/* ── Top header ── */
+.header {
+  height: 64px;
+  background: #fff;
+  border-bottom: 1px solid #e2e8f0;
+  display: flex;
+  align-items: center;
+  padding: 0 24px;
+  gap: 16px;
+  flex-shrink: 0;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+}
+
+.openSidebarBtn {
+  display: none;
+  align-items: center;
+  justify-content: center;
+  padding: 8px;
+  background: none;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  color: #475569;
+  cursor: pointer;
+  transition: background 0.15s;
+
+  &:hover {
+    background: #f8fafc;
+  }
+
+  @media (max-width: 1023px) {
+    display: flex;
+  }
+}
+
+.headerTitle {
+  font-size: 1.125rem;
+  font-weight: 600;
+  color: #0f172a;
+  margin: 0;
+  flex: 1;
+}
+
+.avatar {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: #8b1a3a;
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.875rem;
+  font-weight: 700;
+  flex-shrink: 0;
+}
+
+/* ── Page content area ── */
+.content {
+  flex: 1;
+  overflow: auto;
+  background: #f1f5f9;
+  padding: 28px 32px;
+
+  @media (max-width: 1024px) {
+    padding: 20px;
+  }
+
+  @media (max-width: 640px) {
+    padding: 14px;
+  }
+}

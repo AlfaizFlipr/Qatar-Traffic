@@ -56,7 +56,9 @@
   text-align: center;
   cursor: pointer;
   text-shadow: 1px 1px #000;
-  transition: background 0.18s ease, transform 0.18s ease;
+  transition:
+    background 0.18s ease,
+    transform 0.18s ease;
 
   &:hover {
     background: rgba(255, 255, 255, 0.12);

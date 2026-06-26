@@ -11,13 +11,7 @@ import {
   TextInput,
 } from "@mantine/core";
 import { notifications } from "@mantine/notifications";
-import {
-  RotateCw,
-  Search,
-  ShieldCheck,
-  ShieldQuestion,
-  X,
-} from "lucide-react";
+import { RotateCw, Search, ShieldCheck, ShieldQuestion, X } from "lucide-react";
 import carIcon from "../assets/images/searchTab/car.png";
 import idIcon from "../assets/images/searchTab/Id.png";
 import establishmentIcon from "../assets/images/searchTab/establisment.png";

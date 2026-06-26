@@ -1,4 +1,4 @@
-@import './variables.scss';
+@import "./variables.scss";
 
 * {
   box-sizing: border-box;
@@ -11,7 +11,8 @@ html {
 body {
   margin: 0;
   // MOI uses the "Lusail" font; fall back to Tahoma like the real portal.
-  font-family: 'Noto Kufi Arabic', Tahoma, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+  font-family:
+    "Noto Kufi Arabic", Tahoma, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
   background: $surface; // #f1f4f8
   color: $text;
   border-top: 4px solid $teal; // MOI top accent (#0b8992)

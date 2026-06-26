@@ -1,0 +1,152 @@
+/* ── Promotional Banner ── */
+.bannerWrap {
+  position: relative;
+  border-radius: 12px;
+  overflow: hidden;
+  background: #fff;
+}
+
+.bannerClose {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  z-index: 10;
+  background: rgba(0, 0, 0, 0.5);
+  border: none;
+  border-radius: 50%;
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #fff;
+  cursor: pointer;
+  transition: background 0.15s;
+
+  &:hover {
+    background: rgba(0, 0, 0, 0.75);
+  }
+}
+
+.bannerImg {
+  width: 100%;
+  display: block;
+  max-height: 480px;
+  object-fit: cover;
+}
+
+.bannerFooter {
+  padding: 16px 24px;
+  display: flex;
+  justify-content: center;
+  background: #fff;
+}
+ 
+// ── Card Payment Modal shell ─────────────────────────────────────────────────
+.cardModal {
+  display: flex;
+  flex-direction: column;
+  padding: 4px 0 8px;
+}
+ 
+// ── Note banner — amber strip ────────────────────────────────────────────────
+.cardNote {
+  background: #fef9ec;
+  border: 1px solid #e9c84a;
+  border-left: 4px solid #e9c84a;
+  border-radius: 6px;
+  padding: 11px 14px;
+  margin-bottom: 20px;
+  color: #7a5c00;
+  font-size: 0.88rem;
+  line-height: 1.5;
+ 
+  b,
+  strong {
+    font-weight: 700;
+    color: #5a4200;
+  }
+}
+ 
+// ── Custom field label (expiry + CVV section headings) ───────────────────────
+.fieldLabel {
+  display: block;
+  font-size: 0.87rem;
+  font-weight: 500;
+  color: #344054;
+  margin-bottom: 2px;
+}
+ 
+// ── Sub-label — small grey hint under each heading (MM  YYYY / CVV) ──────────
+.subLabel {
+  display: block;
+  font-size: 0.76rem;
+  color: #8896a5;
+  font-weight: 500;
+  margin-bottom: 6px;
+  letter-spacing: 0.2px;
+}
+ 
+// ── Expiry Date + Security Code — two columns, matching screenshot ────────────
+.expiryAndCvvRow {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20px;
+  align-items: start;
+  margin-bottom: 20px;
+}
+ 
+// MM and YYYY selects side by side
+.expiryInputsRow {
+  display: flex;
+  gap: 8px;
+ 
+  > * {
+    flex: 1 1 0;
+    min-width: 0;
+  }
+}
+ 
+// CVV input + card illustration side by side
+.cvvWithIcon {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+ 
+  > :first-child {
+    flex: 1 1 auto;
+    min-width: 0;
+  }
+}
+ 
+.cvvCardImg {
+  width: 52px;
+  height: auto;
+  flex-shrink: 0;
+  opacity: 0.65;
+}
+ 
+// ── Total amount bar ─────────────────────────────────────────────────────────
+.totalRow {
+  background: #f3f5f8;
+  border: 1px solid #e4e7ec;
+  border-radius: 8px;
+  padding: 13px 18px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin-bottom: 20px;
+}
+ 
+// ── Action buttons — Pay (primary) | Close (outline) ─────────────────────────
+.cardActions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+ 
+  > * {
+    min-width: 88px;
+  }
+}

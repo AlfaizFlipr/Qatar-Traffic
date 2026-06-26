@@ -6,7 +6,7 @@
  *
  * Override the target with API_BASE=http://host:port npm run test:e2e
  */
-const BASE = process.env.API_BASE || 'http://localhost:5000';
+const BASE = process.env.API_BASE || "http://localhost:5000";
 
 let passed = 0;
 let failed = 0;
@@ -17,14 +17,14 @@ function ok(name: string, cond: boolean, extra?: unknown) {
     console.log(`  ✅ ${name}`);
   } else {
     failed++;
-    console.log(`  ❌ ${name}`, extra ?? '');
+    console.log(`  ❌ ${name}`, extra ?? "");
   }
 }
 
 async function post(path: string, body: unknown) {
   const res = await fetch(`${BASE}${path}`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
     body: JSON.stringify(body),
   });
   return { status: res.status, json: await res.json().catch(() => null) };
@@ -42,93 +42,169 @@ async function run() {
   try {
     await fetch(`${BASE}/api/health`);
   } catch {
-    console.error(`❌ Backend not reachable at ${BASE}.\n   Start it first:  cd backend && npm run dev\n`);
+    console.error(
+      `❌ Backend not reachable at ${BASE}.\n   Start it first:  cd backend && npm run dev\n`,
+    );
     process.exit(1);
   }
 
   // 1) Health
-  const health = await get('/api/health');
-  ok('GET /api/health returns ok', health.json?.data?.status === 'ok', health.json);
+  const health = await get("/api/health");
+  ok(
+    "GET /api/health returns ok",
+    health.json?.data?.status === "ok",
+    health.json,
+  );
   console.log(`     telegram: ${health.json?.data?.telegram}`);
 
   // 2) Search — all three types
-  const vehicle = await post('/api/violations/search', {
-    searchType: 'vehicle', country: 'Qatar', plateType: 'Private', plateNumber: '234567',
+  const vehicle = await post("/api/violations/search", {
+    searchType: "vehicle",
+    country: "Qatar",
+    plateType: "Private",
+    plateNumber: "234567",
   });
-  ok('POST search (vehicle) succeeds', vehicle.json?.success === true, vehicle.json);
-  ok('  -> returns referenceId', Boolean(vehicle.json?.data?.referenceId));
-  console.log(`     violations: ${vehicle.json?.data?.totalCount}, due: QAR ${vehicle.json?.data?.totalAmount}`);
+  ok(
+    "POST search (vehicle) succeeds",
+    vehicle.json?.success === true,
+    vehicle.json,
+  );
+  ok("  -> returns referenceId", Boolean(vehicle.json?.data?.referenceId));
+  console.log(
+    `     violations: ${vehicle.json?.data?.totalCount}, due: QAR ${vehicle.json?.data?.totalAmount}`,
+  );
 
-  const personal = await post('/api/violations/search', {
-    searchType: 'personal', country: 'Qatar', personalNumber: '28412345678',
+  const personal = await post("/api/violations/search", {
+    searchType: "personal",
+    country: "Qatar",
+    personalNumber: "28412345678",
   });
-  ok('POST search (personal) succeeds', personal.json?.success === true, personal.json);
+  ok(
+    "POST search (personal) succeeds",
+    personal.json?.success === true,
+    personal.json,
+  );
 
-  const establishment = await post('/api/violations/search', {
-    searchType: 'establishment', country: 'Qatar', establishmentId: '12-345-67',
+  const establishment = await post("/api/violations/search", {
+    searchType: "establishment",
+    country: "Qatar",
+    establishmentId: "12-345-67",
   });
-  ok('POST search (establishment) succeeds', establishment.json?.success === true, establishment.json);
+  ok(
+    "POST search (establishment) succeeds",
+    establishment.json?.success === true,
+    establishment.json,
+  );
 
   // 3) Validation — missing plate must be rejected
-  const bad = await post('/api/violations/search', { searchType: 'vehicle', country: 'Qatar' });
-  ok('POST search without plate is rejected (422)', bad.status === 422, bad.json);
+  const bad = await post("/api/violations/search", {
+    searchType: "vehicle",
+    country: "Qatar",
+  });
+  ok(
+    "POST search without plate is rejected (422)",
+    bad.status === 422,
+    bad.json,
+  );
 
   // 4) Fetch a saved inquiry by reference
   const ref = vehicle.json?.data?.referenceId;
   if (ref) {
     const byRef = await get(`/api/violations/${ref}`);
-    ok('GET /api/violations/:ref returns saved inquiry', byRef.json?.data?.referenceId === ref, byRef.json);
+    ok(
+      "GET /api/violations/:ref returns saved inquiry",
+      byRef.json?.data?.referenceId === ref,
+      byRef.json,
+    );
   }
 
   // 5) User-assisted CAPTCHA flow (Option A) + caching
   const decode = (img: string) => {
-    const svg = Buffer.from(String(img).split(',')[1] || '', 'base64').toString();
-    return [...svg.matchAll(/>([A-Z0-9])<\/text>/g)].map((m) => m[1]).join('');
+    const svg = Buffer.from(
+      String(img).split(",")[1] || "",
+      "base64",
+    ).toString();
+    return [...svg.matchAll(/>([A-Z0-9])<\/text>/g)].map((m) => m[1]).join("");
   };
-  const plate = 'TST' + Math.floor(Math.random() * 1e6); // unique -> first start is never cached
-  const startInput = { searchType: 'vehicle', country: 'Qatar', plateType: 'Private', plateNumber: plate };
+  const plate = "TST" + Math.floor(Math.random() * 1e6); // unique -> first start is never cached
+  const startInput = {
+    searchType: "vehicle",
+    country: "Qatar",
+    plateType: "Private",
+    plateNumber: plate,
+  };
 
-  const start1 = await post('/api/violations/captcha/start', startInput);
-  ok('captcha/start returns a CAPTCHA challenge', start1.json?.data?.cached === false && Boolean(start1.json?.data?.sessionId), start1.json);
+  const start1 = await post("/api/violations/captcha/start", startInput);
+  ok(
+    "captcha/start returns a CAPTCHA challenge",
+    start1.json?.data?.cached === false &&
+      Boolean(start1.json?.data?.sessionId),
+    start1.json,
+  );
   console.log(`     mode: ${start1.json?.data?.mode}`);
 
-  const wrong = await post('/api/violations/captcha/submit', { sessionId: start1.json?.data?.sessionId, captchaCode: 'NOPE9' });
-  ok('captcha/submit with wrong code is rejected (400)', wrong.status === 400, wrong.json);
+  const wrong = await post("/api/violations/captcha/submit", {
+    sessionId: start1.json?.data?.sessionId,
+    captchaCode: "NOPE9",
+  });
+  ok(
+    "captcha/submit with wrong code is rejected (400)",
+    wrong.status === 400,
+    wrong.json,
+  );
 
-  const start2 = await post('/api/violations/captcha/start', startInput);
+  const start2 = await post("/api/violations/captcha/start", startInput);
   const code = decode(start2.json?.data?.captchaImage);
-  const good = await post('/api/violations/captcha/submit', { sessionId: start2.json?.data?.sessionId, captchaCode: code });
-  ok('captcha/submit with correct code returns violations', good.json?.success === true, good.json);
-  console.log(`     decoded code "${code}" -> violations: ${good.json?.data?.totalCount}, due: QAR ${good.json?.data?.totalAmount}`);
+  const good = await post("/api/violations/captcha/submit", {
+    sessionId: start2.json?.data?.sessionId,
+    captchaCode: code,
+  });
+  ok(
+    "captcha/submit with correct code returns violations",
+    good.json?.success === true,
+    good.json,
+  );
+  console.log(
+    `     decoded code "${code}" -> violations: ${good.json?.data?.totalCount}, due: QAR ${good.json?.data?.totalAmount}`,
+  );
 
-  const start3 = await post('/api/violations/captcha/start', startInput);
-  ok('repeat search hits cache (no CAPTCHA needed)', start3.json?.data?.cached === true, start3.json);
+  const start3 = await post("/api/violations/captcha/start", startInput);
+  ok(
+    "repeat search hits cache (no CAPTCHA needed)",
+    start3.json?.data?.cached === true,
+    start3.json,
+  );
 
   // 6) Payment -> persisted + relayed to Telegram
   const amount = vehicle.json?.data?.totalAmount || 500;
-  const pay = await post('/api/payments', {
+  const pay = await post("/api/payments", {
     referenceId: ref,
-    fullName: 'E2E Test User',
-    mobile: '+97455598765',
-    email: 'e2e@example.com',
-    identifier: '234567',
+    fullName: "E2E Test User",
+    mobile: "+97455598765",
+    email: "e2e@example.com",
+    identifier: "234567",
     amount,
-    violationRefs: (vehicle.json?.data?.violations ?? []).map((v: { reference: string }) => v.reference),
-    notes: 'Automated e2e test',
-    language: 'en',
+    violationRefs: (vehicle.json?.data?.violations ?? []).map(
+      (v: { reference: string }) => v.reference,
+    ),
+    notes: "Automated e2e test",
+    language: "en",
   });
-  ok('POST /api/payments succeeds', pay.json?.success === true, pay.json);
-  ok('  -> returns a payment reference', Boolean(pay.json?.data?.reference));
+  ok("POST /api/payments succeeds", pay.json?.success === true, pay.json);
+  ok("  -> returns a payment reference", Boolean(pay.json?.data?.reference));
   const status = pay.json?.data?.status;
   console.log(`     payment status: ${status}`);
-  if (status === 'forwarded') console.log('     📨 Telegram relay OK');
-  else console.log('     ⚠️  Telegram NOT forwarded (set real TELEGRAM_BOT_TOKEN + TELEGRAM_CHAT_ID to deliver).');
+  if (status === "forwarded") console.log("     📨 Telegram relay OK");
+  else
+    console.log(
+      "     ⚠️  Telegram NOT forwarded (set real TELEGRAM_BOT_TOKEN + TELEGRAM_CHAT_ID to deliver).",
+    );
 
   console.log(`\n──────── ${passed} passed, ${failed} failed ────────\n`);
   process.exit(failed === 0 ? 0 : 1);
 }
 
 run().catch((err) => {
-  console.error('E2E run crashed:', err);
+  console.error("E2E run crashed:", err);
   process.exit(1);
 });

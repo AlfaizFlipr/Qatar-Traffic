@@ -1,20 +1,20 @@
-import { Accordion, Container, Text } from '@mantine/core'
-import { faqContent } from '../constants/content'
-import { translations } from '../constants/translations'
-import type { Language } from '../types'
-import { SectionHeader } from './Shared/SectionHeader'
-import styles from './FAQSection.module.scss'
+import { Accordion, Container, Text } from "@mantine/core";
+import { faqContent } from "../constants/content";
+import { translations } from "../constants/translations";
+import type { Language } from "../types";
+import { SectionHeader } from "./Shared/SectionHeader";
+import styles from "./FAQSection.module.scss";
 
 type Props = Readonly<{
-  language: Language
-  t: (typeof translations)[Language]
-}>
+  language: Language;
+  t: (typeof translations)[Language];
+}>;
 
 export function FAQSection({ language, t }: Props) {
-  const isArabic = language === 'ar'
+  const isArabic = language === "ar";
 
   return (
-    <section id="faq" className={styles.section} dir={isArabic ? 'rtl' : 'ltr'}>
+    <section id="faq" className={styles.section} dir={isArabic ? "rtl" : "ltr"}>
       <Container size="lg">
         <SectionHeader title={t.faq.title} />
         <Accordion className={styles.accordion} variant="separated">
@@ -29,5 +29,5 @@ export function FAQSection({ language, t }: Props) {
         </Accordion>
       </Container>
     </section>
-  )
+  );
 }

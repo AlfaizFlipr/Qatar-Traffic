@@ -1,21 +1,24 @@
-import { Badge, Group, Stack, Table, Text, Title } from '@mantine/core'
-import { DollarSign, FileSearch, ListChecks } from 'lucide-react'
-import { adminApi, type ViolationRecord } from '../api/admin'
-import { usePagedData } from '../hooks/usePagedData'
-import { StatCard } from '../components/StatCard'
-import { TablePanel } from '../components/TablePanel'
-import { formatDate, formatQar } from '../utils/format'
+import { Badge, Group, Stack, Table, Text, Title } from "@mantine/core";
+import { DollarSign, FileSearch, ListChecks } from "lucide-react";
+import { adminApi, type ViolationRecord } from "../api/admin";
+import { usePagedData } from "../hooks/usePagedData";
+import { StatCard } from "../components/StatCard";
+import { TablePanel } from "../components/TablePanel";
+import { formatDate, formatQar } from "../utils/format";
 
-const PAGE_SIZE = 20
+const PAGE_SIZE = 20;
 
 const TYPE_COLOR: Record<string, string> = {
-  vehicle: 'blue',
-  personal: 'grape',
-  establishment: 'teal',
-}
+  vehicle: "blue",
+  personal: "grape",
+  establishment: "teal",
+};
 
 export function SearchesPage() {
-  const { state, onSearch, onPage } = usePagedData<ViolationRecord>(adminApi.getViolations, PAGE_SIZE)
+  const { state, onSearch, onPage } = usePagedData<ViolationRecord>(
+    adminApi.getViolations,
+    PAGE_SIZE,
+  );
 
   return (
     <Stack gap="lg">
@@ -27,9 +30,23 @@ export function SearchesPage() {
       </div>
 
       <Group gap="md" grow wrap="wrap">
-        <StatCard label="Total searches" value={state.total} icon={FileSearch} />
-        <StatCard label="Total violations" value={state.totalViolations} icon={ListChecks} color="orange" />
-        <StatCard label="Total amount" value={formatQar(state.totalAmount)} icon={DollarSign} color="green" />
+        <StatCard
+          label="Total searches"
+          value={state.total}
+          icon={FileSearch}
+        />
+        <StatCard
+          label="Total violations"
+          value={state.totalViolations}
+          icon={ListChecks}
+          color="orange"
+        />
+        <StatCard
+          label="Total amount"
+          value={formatQar(state.totalAmount)}
+          icon={DollarSign}
+          color="green"
+        />
       </Group>
 
       <TablePanel
@@ -62,12 +79,16 @@ export function SearchesPage() {
               </Text>
             </Table.Td>
             <Table.Td>
-              <Badge color={TYPE_COLOR[v.searchType] ?? 'gray'} variant="light" tt="capitalize">
+              <Badge
+                color={TYPE_COLOR[v.searchType] ?? "gray"}
+                variant="light"
+                tt="capitalize"
+              >
                 {v.searchType}
               </Badge>
             </Table.Td>
             <Table.Td>{v.identifier}</Table.Td>
-            <Table.Td>{v.ownerName || v.ownerNameAr || '—'}</Table.Td>
+            <Table.Td>{v.ownerName || v.ownerNameAr || "—"}</Table.Td>
             <Table.Td>{v.totalCount}</Table.Td>
             <Table.Td>
               <Text fw={600}>{formatQar(v.totalAmount)}</Text>
@@ -81,5 +102,5 @@ export function SearchesPage() {
         ))}
       />
     </Stack>
-  )
+  );
 }

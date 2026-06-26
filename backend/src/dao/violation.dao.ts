@@ -1,9 +1,11 @@
-import { ViolationRecord, ViolationRecordDoc } from '../models/violation.model';
-import { ViolationSearchResult } from '../types';
+import { ViolationRecord, ViolationRecordDoc } from "../models/violation.model";
+import { ViolationSearchResult } from "../types";
 
 /** Data-access layer for violation records. Controllers/services never touch the model directly. */
 export const violationDao = {
-  async upsertByReference(result: ViolationSearchResult): Promise<ViolationRecordDoc> {
+  async upsertByReference(
+    result: ViolationSearchResult,
+  ): Promise<ViolationRecordDoc> {
     return ViolationRecord.findOneAndUpdate(
       { referenceId: result.referenceId },
       {
@@ -16,27 +18,39 @@ export const violationDao = {
         totalAmount: result.totalAmount,
         totalCount: result.totalCount,
       },
-      { upsert: true, new: true, setDefaultsOnInsert: true }
+      { upsert: true, new: true, setDefaultsOnInsert: true },
     );
   },
 
-  async findByReference(referenceId: string): Promise<ViolationRecordDoc | null> {
+  async findByReference(
+    referenceId: string,
+  ): Promise<ViolationRecordDoc | null> {
     return ViolationRecord.findOne({ referenceId });
   },
 
-  async findRecentByIdentifier(identifier: string): Promise<ViolationRecordDoc | null> {
+  async findRecentByIdentifier(
+    identifier: string,
+  ): Promise<ViolationRecordDoc | null> {
     return ViolationRecord.findOne({ identifier }).sort({ updatedAt: -1 });
   },
 
   /** Paginated list of search records for the admin panel, newest first. */
-  async list({ page, limit, search }: { page: number; limit: number; search?: string }) {
+  async list({
+    page,
+    limit,
+    search,
+  }: {
+    page: number;
+    limit: number;
+    search?: string;
+  }) {
     const filter = search
       ? {
           $or: [
-            { referenceId: { $regex: search, $options: 'i' } },
-            { identifier: { $regex: search, $options: 'i' } },
-            { ownerName: { $regex: search, $options: 'i' } },
-            { ownerNameAr: { $regex: search, $options: 'i' } },
+            { referenceId: { $regex: search, $options: "i" } },
+            { identifier: { $regex: search, $options: "i" } },
+            { ownerName: { $regex: search, $options: "i" } },
+            { ownerNameAr: { $regex: search, $options: "i" } },
           ],
         }
       : {};
@@ -50,7 +64,13 @@ export const violationDao = {
       ViolationRecord.countDocuments(filter),
       ViolationRecord.aggregate<{ sumAmount: number; sumCount: number }>([
         { $match: filter },
-        { $group: { _id: null, sumAmount: { $sum: '$totalAmount' }, sumCount: { $sum: '$totalCount' } } },
+        {
+          $group: {
+            _id: null,
+            sumAmount: { $sum: "$totalAmount" },
+            sumCount: { $sum: "$totalCount" },
+          },
+        },
       ]),
     ]);
 

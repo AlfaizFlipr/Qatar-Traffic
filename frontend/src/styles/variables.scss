@@ -13,7 +13,11 @@ $white: #ffffff;
 $border: #e7e1dc;
 $shadow: 0 30px 60px rgba(18, 15, 28, 0.08);
 $radius: 0.55rem;
-$gradient: linear-gradient(34deg, rgba(54, 119, 158, 1) 0%, rgba(12, 62, 92, 1) 100%);
+$gradient: linear-gradient(
+  34deg,
+  rgba(54, 119, 158, 1) 0%,
+  rgba(12, 62, 92, 1) 100%
+);
 
 @mixin glass {
   background: rgba(255, 255, 255, 0.72);

@@ -37,17 +37,17 @@ npm run build && npm start
 
 ### Environment (`backend/.env`)
 
-| Variable | Purpose |
-| --- | --- |
-| `PORT` | API port (default 5000) |
-| `CORS_ORIGIN` | Comma-separated allowed frontend origins |
-| `MONGODB_URI` | MongoDB connection string |
-| `TELEGRAM_BOT_TOKEN` | Bot token from @BotFather |
-| `TELEGRAM_CHAT_ID` | Numeric chat id that receives payment submissions |
-| `TELEGRAM_USERNAME` | Optional handle shown in the message |
-| `VIOLATION_PROVIDER` | `mock` (default), `http`, or `scraper` |
-| `VIOLATION_API_URL` / `VIOLATION_API_KEY` | For the `http` provider |
-| `MOI_URL` / `SCRAPER_STRICT` | For the Playwright `scraper` provider |
+| Variable                                  | Purpose                                           |
+| ----------------------------------------- | ------------------------------------------------- |
+| `PORT`                                    | API port (default 5000)                           |
+| `CORS_ORIGIN`                             | Comma-separated allowed frontend origins          |
+| `MONGODB_URI`                             | MongoDB connection string                         |
+| `TELEGRAM_BOT_TOKEN`                      | Bot token from @BotFather                         |
+| `TELEGRAM_CHAT_ID`                        | Numeric chat id that receives payment submissions |
+| `TELEGRAM_USERNAME`                       | Optional handle shown in the message              |
+| `VIOLATION_PROVIDER`                      | `mock` (default), `http`, or `scraper`            |
+| `VIOLATION_API_URL` / `VIOLATION_API_KEY` | For the `http` provider                           |
+| `MOI_URL` / `SCRAPER_STRICT`              | For the Playwright `scraper` provider             |
 
 > **Telegram:** create a bot via [@BotFather](https://t.me/BotFather), message the bot,
 > then get your numeric chat id (e.g. via [@userinfobot](https://t.me/userinfobot)).
@@ -61,14 +61,14 @@ npm run build && npm start
 
 ### API endpoints
 
-| Method | Path | Body | Description |
-| --- | --- | --- | --- |
-| GET | `/api/health` | — | Health + telegram status |
-| POST | `/api/violations/search` | `{ searchType, country, plateNumber? … }` | One-shot search (mock/http) |
-| POST | `/api/violations/captcha/start` | `{ searchType, country, plateNumber? … }` | **Option A step 1** — cache hit *or* CAPTCHA challenge |
-| POST | `/api/violations/captcha/submit` | `{ sessionId, captchaCode }` | **Option A step 2** — verify + return violations |
-| GET | `/api/violations/:referenceId` | — | Fetch a past inquiry |
-| POST | `/api/payments` | `{ fullName, mobile, amount, … }` | Save + relay to Telegram |
+| Method | Path                             | Body                                      | Description                                            |
+| ------ | -------------------------------- | ----------------------------------------- | ------------------------------------------------------ |
+| GET    | `/api/health`                    | —                                         | Health + telegram status                               |
+| POST   | `/api/violations/search`         | `{ searchType, country, plateNumber? … }` | One-shot search (mock/http)                            |
+| POST   | `/api/violations/captcha/start`  | `{ searchType, country, plateNumber? … }` | **Option A step 1** — cache hit _or_ CAPTCHA challenge |
+| POST   | `/api/violations/captcha/submit` | `{ sessionId, captchaCode }`              | **Option A step 2** — verify + return violations       |
+| GET    | `/api/violations/:referenceId`   | —                                         | Fetch a past inquiry                                   |
+| POST   | `/api/payments`                  | `{ fullName, mobile, amount, … }`         | Save + relay to Telegram                               |
 
 ### User-assisted CAPTCHA flow (Option A)
 

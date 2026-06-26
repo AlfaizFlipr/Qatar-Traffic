@@ -1,14 +1,19 @@
-import { Group, Paper, Text, ThemeIcon } from '@mantine/core'
-import type { LucideIcon } from 'lucide-react'
+import { Group, Paper, Text, ThemeIcon } from "@mantine/core";
+import type { LucideIcon } from "lucide-react";
 
 interface StatCardProps {
-  label: string
-  value: string | number
-  icon: LucideIcon
-  color?: string
+  label: string;
+  value: string | number;
+  icon: LucideIcon;
+  color?: string;
 }
 
-export function StatCard({ label, value, icon: Icon, color = 'brand' }: StatCardProps) {
+export function StatCard({
+  label,
+  value,
+  icon: Icon,
+  color = "brand",
+}: StatCardProps) {
   return (
     <Paper withBorder radius="md" p="md" style={{ flex: 1, minWidth: 180 }}>
       <Group justify="space-between" wrap="nowrap">
@@ -25,5 +30,5 @@ export function StatCard({ label, value, icon: Icon, color = 'brand' }: StatCard
         </ThemeIcon>
       </Group>
     </Paper>
-  )
+  );
 }

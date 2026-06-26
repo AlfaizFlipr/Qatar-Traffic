@@ -1,17 +1,17 @@
-import { useCallback, useEffect, useState } from 'react'
-import { ApiError } from '../api/client'
-import { useAdminAuth } from '../context/AdminAuthContext'
-import type { Paginated } from '../api/admin'
+import { useCallback, useEffect, useState } from "react";
+import { ApiError } from "../api/client";
+import { useAdminAuth } from "../context/AdminAuthContext";
+import type { Paginated } from "../api/admin";
 
 interface State<T> {
-  items: T[]
-  total: number
-  totalAmount: number
-  totalViolations: number
-  page: number
-  loading: boolean
-  error: string | null
-  search: string
+  items: T[];
+  total: number;
+  totalAmount: number;
+  totalViolations: number;
+  page: number;
+  loading: boolean;
+  error: string | null;
+  search: string;
 }
 
 const initial = {
@@ -22,22 +22,26 @@ const initial = {
   page: 1,
   loading: true,
   error: null,
-  search: '',
-}
+  search: "",
+};
 
 /** Loads paginated admin data, handling search, paging, and 401-logout. */
 export function usePagedData<T>(
-  fetcher: (params: { page: number; limit: number; search: string }) => Promise<Paginated<T>>,
+  fetcher: (params: {
+    page: number;
+    limit: number;
+    search: string;
+  }) => Promise<Paginated<T>>,
   limit: number,
 ) {
-  const { logout } = useAdminAuth()
-  const [state, setState] = useState<State<T>>(initial as State<T>)
+  const { logout } = useAdminAuth();
+  const [state, setState] = useState<State<T>>(initial as State<T>);
 
   const load = useCallback(
     async (page: number, search: string) => {
-      setState((s) => ({ ...s, loading: true, error: null }))
+      setState((s) => ({ ...s, loading: true, error: null }));
       try {
-        const data = await fetcher({ page, limit, search })
+        const data = await fetcher({ page, limit, search });
         setState({
           items: data.items,
           total: data.total,
@@ -47,22 +51,26 @@ export function usePagedData<T>(
           loading: false,
           error: null,
           search,
-        })
+        });
       } catch (err) {
-        if (err instanceof ApiError && err.status === 401) return logout()
-        setState((s) => ({ ...s, loading: false, error: err instanceof Error ? err.message : 'Failed to load' }))
+        if (err instanceof ApiError && err.status === 401) return logout();
+        setState((s) => ({
+          ...s,
+          loading: false,
+          error: err instanceof Error ? err.message : "Failed to load",
+        }));
       }
     },
     [fetcher, limit, logout],
-  )
+  );
 
   useEffect(() => {
-    load(1, '')
-  }, [load])
+    load(1, "");
+  }, [load]);
 
   return {
     state,
     onSearch: (q: string) => load(1, q),
     onPage: (p: number) => load(p, state.search),
-  }
+  };
 }

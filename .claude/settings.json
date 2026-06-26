@@ -13,8 +13,6 @@
       "Bash(\"/c/Program Files/Google/Chrome/Application/chrome.exe\" --headless=new --disable-gpu --hide-scrollbars --window-size=1440,2400 --screenshot=/tmp/pay.png \"http://localhost:5191/pay?demo\")",
       "Bash(cp /tmp/pay.png \"c:/Users/LENOVO/Music/Qatar/frontend/pay-preview.png\")"
     ],
-    "additionalDirectories": [
-      "\\tmp"
-    ]
+    "additionalDirectories": ["\\tmp"]
   }
 }

