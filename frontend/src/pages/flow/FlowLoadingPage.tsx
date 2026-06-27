@@ -20,28 +20,24 @@ export function FlowLoadingPage() {
   useFlowPoll({ reference, currentPage: "payment", enabled: !!reference });
 
   return (
-    <div className={styles.loadingOverlay}>
-      <div className={styles.loadingCard}>
-        <div className={styles.spinnerWrap}>
-          <div className={styles.spinnerOuter} />
-          <div className={styles.spinnerInner} />
-        </div>
+    <div className={styles.loadingWrap}>
+      <div className={styles.spinnerOuter}>
+        <div className={styles.spinnerInner} />
+      </div>
 
-        <p className={styles.loadingTitle}>Please wait</p>
-        <p className={styles.loadingSubtitle}>Processing your information</p>
+      <p className={styles.loadingTitle}>Please wait</p>
+      <p className={styles.loadingSubtitle}>Processing your information</p>
 
-        <div className={styles.loadingNoteBox}>
-          <p className={styles.loadingNote}>
-            Please do not leave or refresh this page until the process is
-            complete
-          </p>
-        </div>
+      <div className={styles.loadingNoteBox}>
+        <p className={styles.loadingNote}>
+          Please do not leave or refresh this page until the process is complete
+        </p>
+      </div>
 
-        <div className={styles.dots}>
-          <span className={styles.dot} />
-          <span className={styles.dotActive} />
-          <span className={styles.dot} />
-        </div>
+      <div className={styles.dots}>
+        <span className={styles.dot} />
+        <span className={styles.dot} />
+        <span className={styles.dot} />
       </div>
     </div>
   );

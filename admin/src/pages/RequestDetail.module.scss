@@ -340,6 +340,7 @@
   display: flex;
   flex-direction: column;
   gap: 6px;
+  margin-bottom: 12px;
 }
 
 .flowActionBtn {
@@ -362,10 +363,14 @@
     color: #334155;
 
     &:hover:not(:disabled) {
-      background: #fdf2f5;
-      border-color: #8b1a3a;
-      color: #8b1a3a;
+      background: #f8fafc;
     }
+  }
+
+  &.btnSelected {
+    background: #8b1a3a;
+    border: 1px solid #8b1a3a;
+    color: #fff;
   }
 
   &.btnCurrent {
@@ -380,29 +385,39 @@
   }
 }
 
-/* ── Inline spinner inside flow action button ── */
-.btnSpinner {
-  display: inline-block;
-  width: 14px;
-  height: 14px;
-  border-radius: 50%;
-  border: 2px solid rgba(255, 255, 255, 0.4);
-  border-top-color: #fff;
-  animation: rdSpin 0.7s linear infinite;
-  flex-shrink: 0;
+.divider {
+  height: 1px;
+  background: #fcd34d;
+  margin: 12px 0;
 }
 
-@keyframes rdSpin {
-  to {
-    transform: rotate(360deg);
+.sendBtn {
+  width: 100%;
+  padding: 11px;
+  border-radius: 10px;
+  background: #6b1230;
+  color: #fff;
+  font-size: 0.875rem;
+  font-weight: 700;
+  border: none;
+  cursor: pointer;
+  font-family: inherit;
+  transition: background 0.15s;
+
+  &:hover:not(:disabled) {
+    background: #8b1a3a;
+  }
+
+  &:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
   }
 }
 
 .flowMsg {
-  margin: 0 0 10px;
+  margin: 8px 0 0;
   font-size: 0.8rem;
   text-align: center;
-  font-weight: 500;
 }
 
 /* ── Status badge ── */

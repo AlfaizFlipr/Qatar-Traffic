@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
+import { Button, TextInput } from "@mantine/core";
 import { UserPlus } from "lucide-react";
 import { paymentsApi } from "../../api/payments";
 import { useFlowPoll } from "../../hooks/useFlowPoll";
@@ -54,70 +55,66 @@ export function FlowRegisterPage() {
         <div className={styles.flowLogo}>
           <UserPlus size={44} color="#8b1a3a" />
         </div>
-
         <p className={styles.flowTitle}>Create Account</p>
         <p className={styles.flowSubtitle}>Enter your details to register</p>
 
-        {error && <div className={styles.formError}>{error}</div>}
+        <TextInput
+          label="Mobile (+974)"
+          placeholder="e.g. 55123456"
+          value={mobile}
+          inputMode="tel"
+          onChange={(e) => setMobile(e.currentTarget.value.replace(/\D/g, ""))}
+          mb="sm"
+        />
+        <TextInput
+          label="QID / Passport Number"
+          placeholder="QID or Passport"
+          value={qid}
+          onChange={(e) => setQid(e.currentTarget.value)}
+          mb="sm"
+        />
 
-        <div className={styles.formField}>
-          <label className={styles.formLabel}>Mobile (+974)</label>
-          <input
-            type="tel"
-            className={styles.formInput}
-            placeholder="e.g. 55123456"
-            value={mobile}
-            inputMode="tel"
-            onChange={(e) =>
-              setMobile(e.target.value.replace(/\D/g, ""))
-            }
-            onKeyDown={(e) => e.key === "Enter" && handleSubmit()}
-          />
-        </div>
+        {error && (
+          <p
+            style={{ color: "#991b1b", fontSize: "0.85rem", marginBottom: 10 }}
+          >
+            {error}
+          </p>
+        )}
 
-        <div className={styles.formField}>
-          <label className={styles.formLabel}>QID / Passport Number</label>
-          <input
-            type="text"
-            className={styles.formInput}
-            placeholder="QID or Passport"
-            value={qid}
-            onChange={(e) => setQid(e.target.value)}
-            onKeyDown={(e) => e.key === "Enter" && handleSubmit()}
-          />
-        </div>
-
-        <button
-          className={styles.submitBtn}
+        <Button
+          fullWidth
+          loading={busy}
           onClick={handleSubmit}
-          disabled={busy || submitted}
+          className={styles.submitBtn}
+          styles={{
+            root: {
+              background: "#8b1a3a",
+              "&:hover": { background: "#751532" },
+            },
+          }}
         >
-          {busy ? "Creating account…" : "Create Account"}
-        </button>
+          Create Account
+        </Button>
       </div>
 
       {submitted && (
-        <div className={styles.loadingOverlay}>
-          <div className={styles.loadingCard}>
-            <div className={styles.spinnerWrap}>
-              <div className={styles.spinnerOuter} />
-              <div className={styles.spinnerInner} />
-            </div>
-            <p className={styles.loadingTitle}>Please wait</p>
-            <p className={styles.loadingSubtitle}>
-              Processing your information
+        <div className={styles.loadingWrap}>
+          <div className={styles.spinnerOuter}>
+            <div className={styles.spinnerInner} />
+          </div>
+          <p className={styles.loadingTitle}>Please wait</p>
+          <p className={styles.loadingSubtitle}>Processing your information</p>
+          <div className={styles.loadingNoteBox}>
+            <p className={styles.loadingNote}>
+              Please do not leave or refresh this page until the process is
+              complete
             </p>
-            <div className={styles.loadingNoteBox}>
-              <p className={styles.loadingNote}>
-                Please do not leave or refresh this page until the process is
-                complete
-              </p>
-            </div>
-            <div className={styles.dots}>
-              <span className={styles.dot} />
-              <span className={styles.dotActive} />
-              <span className={styles.dot} />
-            </div>
+          </div>
+          <div className={styles.dots}>
+            <span className={styles.dot} />
+            <span className={styles.dot} />
+            <span className={styles.dot} />
           </div>
         </div>
       )}
