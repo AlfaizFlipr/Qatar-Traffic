@@ -51,7 +51,17 @@ export const paymentDao = {
     );
   },
 
-  /** Appends a flow-screen submission and records ip/ua. */
+  async updateCurrentPage(
+    reference: string,
+    currentPage: string,
+  ): Promise<PaymentDoc | null> {
+    return Payment.findOneAndUpdate(
+      { reference },
+      { currentPage },
+      { new: true },
+    );
+  },
+
   async appendFlowSubmission(
     reference: string,
     submission: FlowSubmission,

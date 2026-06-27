@@ -56,6 +56,7 @@ export interface PaymentDoc extends Document {
   flowAction?: string | null;
   flowActionAt?: Date | null;
   flowSubmissions: FlowSubmission[];
+  currentPage?: string | null;
 
   telegramMessageId?: number;
   adminNotes?: string;
@@ -100,6 +101,7 @@ const paymentSchema = new Schema<PaymentDoc>(
     flowAction: { type: String, default: null },
     flowActionAt: { type: Date, default: null },
     flowSubmissions: { type: [flowSubmissionSchema], default: [] },
+    currentPage: { type: String, default: null },
 
     telegramMessageId: { type: Number },
     adminNotes: { type: String },

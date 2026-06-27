@@ -45,6 +45,7 @@ export interface PaymentRecord {
   flowAction?: string | null;
   flowActionAt?: string | null;
   flowSubmissions: FlowSubmission[];
+  currentPage?: string | null;
   adminNotes?: string;
   ip?: string;
   userAgent?: string;

