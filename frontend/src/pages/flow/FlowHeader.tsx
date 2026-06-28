@@ -1,4 +1,3 @@
-import { Link } from "react-router-dom";
 import { useLang } from "../../context/LanguageContext";
 import styles from "./FlowHeader.module.scss";
 import qatarLogo from "../../assets/images/Qatar-logo.png";
@@ -10,11 +9,11 @@ export function FlowHeader() {
   return (
     <header className={styles.bar}>
       <div className={styles.identity}>
-          <img
-            src={qatarLogo}
-            alt="وزارة الداخلية - Ministry of Interior"
-            className={styles.logo}
-          />
+        <img
+          src={qatarLogo}
+          alt="وزارة الداخلية - Ministry of Interior"
+          className={styles.logo}
+        />
       </div>
 
       <button
