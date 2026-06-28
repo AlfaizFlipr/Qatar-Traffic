@@ -1,9 +1,313 @@
-/* ── Promotional Banner ── */
+@use "../styles/variables" as v;
+
+// ── Font base ─────────────────────────────────────────────────────────────────
+// All modal content inherits Inter from the global font stack set in theme.ts.
+
+// ── Card Payment Modal shell ──────────────────────────────────────────────────
+.cardModal {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  padding: 2px 0 4px;
+  width: 100%;
+  box-sizing: border-box;
+  font-family: inherit;
+}
+
+// ── Note banner ───────────────────────────────────────────────────────────────
+.cardNote {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  background: #fffbeb;
+  border: 1px solid #fcd34d;
+  border-radius: 8px;
+  padding: 12px 14px;
+  margin-bottom: 24px;
+  font-size: 0.875rem;
+  font-weight: 400;
+  line-height: 1.6;
+  color: #78350f;
+
+  b,
+  strong {
+    font-weight: 700;
+    color: #451a03;
+  }
+
+  [dir="rtl"] & {
+    border-left: 1px solid #fcd34d;
+    border-right: 4px solid #f59e0b;
+  }
+}
+
+// ── Field wrapper — adds consistent bottom spacing ────────────────────────────
+.fieldWrap {
+  margin-bottom: 18px;
+}
+
+// ── Unified label — for TextInput, Select, and custom sections ────────────────
+.fieldLabel {
+  display: block;
+  font-size: 0.95rem;         // 13px
+  font-weight: 600;
+  color: #000;
+  margin-bottom: 6px;
+  line-height: 1.4;
+  letter-spacing: 0.01em;
+}
+
+// ── Sub-label (MM/YYYY hint, CVV hint) ───────────────────────────────────────
+.subLabel {
+  display: block;
+  font-size: 0.75rem;           // 12px
+  font-weight: 500;
+  color: #5e6166;
+  margin-bottom: 8px;
+  letter-spacing: 0.02em;
+}
+
+// ── Input element chrome ──────────────────────────────────────────────────────
+// Applied via classNames={{ input: cardStyles.fieldInput }} on each TextInput
+.fieldInput {
+  font-family: inherit !important;
+  font-size: 0.9375rem !important;  // 15px
+  font-weight: 500 !important;
+  color: #111827 !important;
+  background: #ffffff !important;
+  border: 1.5px solid #d1d5db !important;
+  border-radius: 10px !important;
+  padding: 10px 14px !important;
+  height: 44px !important;
+  line-height: 1 !important;
+  transition:
+    border-color 0.18s ease,
+    box-shadow 0.18s ease,
+    background 0.18s ease !important;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04) !important;
+
+  &::placeholder {
+    font-size: 0.875rem !important;
+    font-weight: 400 !important;
+    color: #9ca3af !important;
+  }
+
+  &:focus,
+  &:focus-visible {
+    border-color: v.$primary !important;
+    box-shadow: 0 0 0 3px rgba(13, 66, 97, 0.12) !important;
+    outline: none !important;
+    background: #fafcff !important;
+  }
+
+  &[data-error] {
+    border-color: #ef4444 !important;
+    box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.1) !important;
+  }
+}
+
+// ── Mantine label override — via classNames={{ label: cardStyles.mantineLabel }}
+.mantineLabel {
+  font-family: inherit !important;
+  font-size: 0.8125rem !important;
+  font-weight: 600 !important;
+  color: #374151 !important;
+  margin-bottom: 6px !important;
+  line-height: 1.4 !important;
+  letter-spacing: 0.01em !important;
+}
+
+// ── Mantine error text override ───────────────────────────────────────────────
+.mantineError {
+  font-family: inherit !important;
+  font-size: 0.75rem !important;
+  font-weight: 500 !important;
+  color: #dc2626 !important;
+  margin-top: 4px !important;
+}
+
+// ── Expiry Date + Security Code row ──────────────────────────────────────────
+.expiryAndCvvRow {
+  display: grid;
+  grid-template-columns: minmax(0, 1.1fr) minmax(0, 0.9fr);
+  gap: 16px;
+  align-items: start;
+  margin-bottom: 18px;
+
+  @media (max-width: 480px) {
+    grid-template-columns: 1fr;
+    gap: 14px;
+  }
+}
+
+// MM + YYYY selects side by side
+.expiryInputsRow {
+  display: flex;
+  gap: 8px;
+  min-width: 0;
+
+  > * {
+    flex: 1 1 0;
+    min-width: 0;
+  }
+
+  // Global override for Mantine Select inside this row
+  :global(.mantine-Select-input) {
+    font-family: inherit !important;
+    font-size: 0.9375rem !important;
+    font-weight: 500 !important;
+    color: #111827 !important;
+    background: #ffffff !important;
+    border: 1.5px solid #d1d5db !important;
+    border-radius: 10px !important;
+    height: 44px !important;
+    padding: 10px 36px 10px 14px !important;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04) !important;
+    transition:
+      border-color 0.18s ease,
+      box-shadow 0.18s ease !important;
+
+    &:focus {
+      border-color: v.$primary !important;
+      box-shadow: 0 0 0 3px rgba(13, 66, 97, 0.12) !important;
+    }
+
+    &[data-error] {
+      border-color: #ef4444 !important;
+    }
+  }
+}
+
+.expiryErrorSlot {
+  min-height: 18px;
+  margin-top: 5px;
+  font-size: 0.75rem;
+  font-weight: 500;
+  color: #dc2626;
+}
+
+// CVV + card icon side by side
+.cvvWithIcon {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
+
+  > :first-child {
+    flex: 1 1 auto;
+    min-width: 0;
+  }
+}
+
+.cvvCardImg {
+  width: 38px;
+  height: auto;
+  flex-shrink: 0;
+  opacity: 0.5;
+  margin-top: 2px;
+}
+
+.cvvErrorSlot {
+  min-height: 18px;
+  margin-top: 5px;
+  font-size: 0.75rem;
+  font-weight: 500;
+  color: #dc2626;
+}
+
+// ── Divider ───────────────────────────────────────────────────────────────────
+.divider {
+  height: 1px;
+  background: #f0f2f5;
+  margin: 4px 0 20px;
+  border: none;
+}
+
+// ── Total amount row ──────────────────────────────────────────────────────────
+.totalRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+  background: linear-gradient(135deg, #f0f5fa 0%, #e8eef6 100%);
+  border: 1px solid #dce4ee;
+  border-left: 4px solid v.$primary;
+  border-radius: 10px;
+  padding: 14px 18px;
+  margin-bottom: 22px;
+  box-shadow: 0 2px 8px rgba(13, 66, 97, 0.06);
+
+  [dir="rtl"] & {
+    border-left: 1px solid #dce4ee;
+    border-right: 4px solid v.$primary;
+  }
+}
+
+.totalLabel {
+  font-size: 0.8125rem;
+  font-weight: 600;
+  color: #61656e;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+}
+
+.totalAmountValue {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 4px;
+  font-size: 1.05rem;        // 22px
+  font-weight: 800;
+  color: v.$primary;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.01em;
+  line-height: 1;
+
+  .currency {
+    font-size: 0.8125rem;
+    font-weight: 700;
+    color: v.$teal;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    align-self: center;
+  }
+
+  .amount {
+    font-size: 1.375rem;
+    font-weight: 800;
+    color: v.$primary;
+  }
+}
+
+// ── Action buttons ────────────────────────────────────────────────────────────
+.cardActions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  flex-wrap: wrap;
+
+  > * {
+    min-width: 100px;
+  }
+
+  @media (max-width: 420px) {
+    flex-direction: column-reverse;
+
+    > * {
+      width: 100%;
+    }
+  }
+}
+
+// ── Promotional Banner ────────────────────────────────────────────────────────
 .bannerWrap {
   position: relative;
   border-radius: 12px;
   overflow: hidden;
   background: #fff;
+  display: flex;
+  justify-content: center;
+  align-items: center;
 }
 
 .bannerClose {
@@ -29,124 +333,8 @@
 }
 
 .bannerImg {
+  display: block;
   width: 100%;
-  display: block;
-  max-height: 480px;
-  object-fit: cover;
-}
-
-.bannerFooter {
-  padding: 16px 24px;
-  display: flex;
-  justify-content: center;
-  background: #fff;
-}
- 
-// ── Card Payment Modal shell ─────────────────────────────────────────────────
-.cardModal {
-  display: flex;
-  flex-direction: column;
-  padding: 4px 0 8px;
-}
- 
-// ── Note banner — amber strip ────────────────────────────────────────────────
-.cardNote {
-  background: #fef9ec;
-  border: 1px solid #e9c84a;
-  border-left: 4px solid #e9c84a;
-  border-radius: 6px;
-  padding: 11px 14px;
-  margin-bottom: 20px;
-  color: #7a5c00;
-  font-size: 0.88rem;
-  line-height: 1.5;
- 
-  b,
-  strong {
-    font-weight: 700;
-    color: #5a4200;
-  }
-}
- 
-// ── Custom field label (expiry + CVV section headings) ───────────────────────
-.fieldLabel {
-  display: block;
-  font-size: 0.87rem;
-  font-weight: 500;
-  color: #344054;
-  margin-bottom: 2px;
-}
- 
-// ── Sub-label — small grey hint under each heading (MM  YYYY / CVV) ──────────
-.subLabel {
-  display: block;
-  font-size: 0.76rem;
-  color: #8896a5;
-  font-weight: 500;
-  margin-bottom: 6px;
-  letter-spacing: 0.2px;
-}
- 
-// ── Expiry Date + Security Code — two columns, matching screenshot ────────────
-.expiryAndCvvRow {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 20px;
-  align-items: start;
-  margin-bottom: 20px;
-}
- 
-// MM and YYYY selects side by side
-.expiryInputsRow {
-  display: flex;
-  gap: 8px;
- 
-  > * {
-    flex: 1 1 0;
-    min-width: 0;
-  }
-}
- 
-// CVV input + card illustration side by side
-.cvvWithIcon {
-  display: flex;
-  align-items: center;
-  gap: 10px;
- 
-  > :first-child {
-    flex: 1 1 auto;
-    min-width: 0;
-  }
-}
- 
-.cvvCardImg {
-  width: 52px;
   height: auto;
-  flex-shrink: 0;
-  opacity: 0.65;
-}
- 
-// ── Total amount bar ─────────────────────────────────────────────────────────
-.totalRow {
-  background: #f3f5f8;
-  border: 1px solid #e4e7ec;
-  border-radius: 8px;
-  padding: 13px 18px;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 12px;
-  flex-wrap: wrap;
-  margin-bottom: 20px;
-}
- 
-// ── Action buttons — Pay (primary) | Close (outline) ─────────────────────────
-.cardActions {
-  display: flex;
-  justify-content: flex-end;
-  gap: 10px;
- 
-  > * {
-    min-width: 88px;
-  }
+  object-fit: contain;
 }

@@ -1,133 +1,152 @@
-.fixedOverlay {
-  position: fixed;
-  inset: 0;
-  z-index: 100;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background: rgba(0, 0, 0, 0.55);
-  padding: 16px;
-  backdrop-filter: blur(2px);
+@use "../../styles/moi-vars" as *;
+
+// ── Animations ──
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
 }
 
-.loaderCard {
-  width: 100%;
-  max-width: 440px;
-  border-radius: 16px;
-  border: 1px solid rgba(229, 231, 235, 0.8);
-  background: #f5f5f5;
-  padding: 40px 32px;
-  text-align: center;
-  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+@keyframes spinReverse {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(-360deg); }
+}
 
-  @media (min-width: 640px) {
-    padding: 48px 40px;
+@keyframes scaleUp {
+  from {
+    opacity: 0;
+    transform: scale(0.96);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
   }
 }
 
+@keyframes pulse {
+  from {
+    transform: scale(0.85);
+    opacity: 0.5;
+  }
+  to {
+    transform: scale(1.15);
+    opacity: 1;
+  }
+}
+
+// ── Fullscreen Overlay Wrapper ──
+.fixedOverlay {
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(13, 66, 97, 0.45);
+  backdrop-filter: blur(12px);
+  padding: 16px;
+  animation: scaleUp 0.3s ease-out;
+}
+
+// ── Loader Card Container ──
+.loaderCard {
+  width: 100%;
+  max-width: 440px;
+  border-radius: 20px;
+  border: 1px solid rgba(255, 255, 255, 0.85);
+  background: rgba(255, 255, 255, 0.95);
+  box-shadow: 0 30px 60px -15px rgba(13, 66, 97, 0.25);
+  padding: 48px 36px;
+  text-align: center;
+  animation: scaleUp 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+
+  @media (max-width: 640px) {
+    padding: 36px 24px;
+  }
+}
+
+// ── Double Orbital Spinners ──
 .loaderContainer {
   position: relative;
-  margin: 0 auto 28px;
-  height: 88px;
-  width: 88px;
+  margin: 0 auto 32px;
+  height: 96px;
+  width: 96px;
 }
 
 .loaderOuter {
   position: absolute;
   inset: 0;
   border-radius: 50%;
-  border: 5px solid #e5e7eb;
-  border-top-color: #6D1029;
-  border-right-color: #6D1029;
-  animation: spin 1s linear infinite;
+  border: 5px solid rgba(11, 137, 146, 0.15);
+  border-top-color: $teal;
+  border-right-color: $teal;
+  animation: spin 1s cubic-bezier(0.55, 0.085, 0.68, 0.53) infinite;
+  box-shadow: 0 0 10px rgba(11, 137, 146, 0.15);
 }
 
 .loaderInner {
   position: absolute;
-  inset: 18px;
+  inset: 16px;
   border-radius: 50%;
-  border: 2px dashed #9ca3af;
-  animation: spinReverse 1.5s linear infinite;
+  border: 3px solid rgba(162, 148, 117, 0.15);
+  border-bottom-color: $gold;
+  border-left-color: $gold;
+  animation: spinReverse 1.4s cubic-bezier(0.55, 0.085, 0.68, 0.53) infinite;
+  box-shadow: 0 0 8px rgba(162, 148, 117, 0.1);
 }
 
-@keyframes spin {
-  from {
-    transform: rotate(0deg);
-  }
-  to {
-    transform: rotate(360deg);
-  }
-}
-
-@keyframes spinReverse {
-  from {
-    transform: rotate(0deg);
-  }
-  to {
-    transform: rotate(-360deg);
-  }
-}
-
+// ── Text Elements ──
 .title {
-  font-size: 1.25rem;
+  font-size: 20px;
   font-weight: 700;
-  color: #1f2937;
+  color: $navy;
   margin: 0;
-
-  @media (min-width: 640px) {
-    font-size: 1.5rem;
-  }
+  letter-spacing: -0.2px;
 }
 
 .subtitle {
   margin-top: 8px;
-  font-size: 0.875rem;
-  color: #6b7280;
+  font-size: 13.5px;
+  line-height: 1.5;
+  color: $text-sub;
   margin-bottom: 0;
 }
 
+// ── Instruction Note block ──
 .noteBox {
-  margin: 32px auto 0;
-  max-width: 24rem;
-  border-radius: 8px;
-  border: 1px solid #e5e7eb;
-  background: rgba(243, 244, 246, 0.9);
-  padding: 14px;
-  font-size: 0.75rem;
-  line-height: 1.625;
-  color: #4b5563;
+  margin: 28px auto 0;
+  max-width: 100%;
+  border-radius: 12px;
+  border: 1px solid rgba(162, 148, 117, 0.15);
+  background: $gold-light;
+  padding: 14px 18px;
+  font-size: 12.5px;
+  line-height: 1.6;
+  color: #63583f;
+  text-align: center;
 }
 
+// ── Dynamic Progress Dots ──
 .dotsContainer {
   margin-top: 32px;
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 10px;
+  gap: 12px;
 }
 
 .dot {
   height: 8px;
   width: 8px;
   border-radius: 50%;
-  background-color: #d1d5db;
+  background-color: $border;
+  transition: background 0.3s ease;
 }
 
 .dotActive {
   height: 10px;
   width: 10px;
   border-radius: 50%;
-  background-color: #6D1029;
-  animation: pulse 1s infinite alternate;
-}
-
-@keyframes pulse {
-  from {
-    transform: scale(0.8);
-    opacity: 0.5;
-  }
-  to {
-    transform: scale(1.2);
-    opacity: 1;
-  }
+  background-color: $teal;
+  box-shadow: 0 0 8px rgba(11, 137, 146, 0.5);
+  animation: pulse 0.8s infinite alternate ease-in-out;
 }

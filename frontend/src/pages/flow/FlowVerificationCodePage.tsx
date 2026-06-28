@@ -61,33 +61,81 @@ export function FlowVerificationCodePage() {
   const canSubmit = otp.length === 6 && !busy;
 
   return (
-    <div style={{ display: "flex", flexDirection: "column", minHeight: "100vh" }}>
+    <div className={styles.page}>
       <FlowHeader />
-      <div className={styles.container} dir={dir}>
+
+      <div className={styles.center} dir={dir}>
         <div className={styles.card}>
-          <div className={styles.header}>
-            <div className={styles.qgccBadge}>
-              <span className={styles.qgccDept}>{ft.govDept}</span>
-              <span className={styles.qgccSub}>{ft.govSub}</span>
-              <span className={styles.qgccAcronym}>{ft.govAcronym}</span>
+
+          {/* ── Gradient header ── */}
+          <div className={styles.cardHead}>
+            <div className={styles.iconWrap}>
+              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth="1.6" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" d="M21.75 6.75v10.5a2.25 2.25 0 01-2.25 2.25h-15a2.25 2.25 0 01-2.25-2.25V6.75m19.5 0A2.25 2.25 0 0019.5 4.5h-15a2.25 2.25 0 00-2.25 2.25m19.5 0v.243a2.25 2.25 0 01-1.07 1.916l-7.5 4.615a2.25 2.25 0 01-2.36 0L3.32 8.91a2.25 2.25 0 01-1.07-1.916V6.75" />
+              </svg>
             </div>
-            <h1 className={styles.title}>{fvc.title}</h1>
-            <p className={styles.desc}>{fvc.desc}</p>
+            <h1 className={styles.headTitle}>{fvc.title}</h1>
+            <p className={styles.headDesc}>{fvc.desc}</p>
           </div>
-          {error && <div className={styles.errorBox}>{error}</div>}
-          <form onSubmit={handleSubmit} className={styles.form}>
-            <div>
-              <label htmlFor="verification_code" className={styles.label}>{fvc.label}</label>
-              <input type="text" id="verification_code" value={otp} onChange={(e) => handleInput(e.target.value)} inputMode="numeric" maxLength={6} autoComplete="one-time-code" placeholder={fvc.placeholder} dir="ltr" className={styles.input} />
+
+          {/* ── Body ── */}
+          <div className={styles.body}>
+            {error && <div className={styles.error}>{error}</div>}
+
+            <form onSubmit={handleSubmit}>
+              <label className={styles.pinLabel} htmlFor="verification_code">
+                {fvc.label}
+              </label>
+
+              <input
+                id="verification_code"
+                type="text"
+                value={otp}
+                onChange={(e) => handleInput(e.target.value)}
+                inputMode="numeric"
+                maxLength={6}
+                autoComplete="one-time-code"
+                placeholder={fvc.placeholder}
+                dir="ltr"
+                className={styles.pinField}
+              />
+
+              <div className={styles.dots}>
+                {[0, 1, 2, 3, 4, 5].map((i) => (
+                  <span
+                    key={i}
+                    className={`${styles.dot}${i < otp.length ? ` ${styles.filled}` : ""}`}
+                  />
+                ))}
+              </div>
+
+              <button
+                type="submit"
+                disabled={!canSubmit}
+                className={styles.submit}
+              >
+                {busy ? "…" : fvc.submit}
+              </button>
+            </form>
+
+            <div className={styles.secureNote}>
+              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth="1.8" stroke="currentColor" aria-hidden="true">
+                <path strokeLinecap="round" strokeLinejoin="round" d="M16.5 10.5V6.75a4.5 4.5 0 10-9 0v3.75m-.75 11.25h10.5a2.25 2.25 0 002.25-2.25v-6.75a2.25 2.25 0 00-2.25-2.25H6.75a2.25 2.25 0 00-2.25 2.25v6.75a2.25 2.25 0 002.25 2.25z" />
+              </svg>
+              {ft.securedBy}
             </div>
-            <button type="submit" disabled={!canSubmit} className={`${styles.submitBtn} ${canSubmit ? styles.active : styles.disabled}`}>
-              {fvc.submit}
-            </button>
-          </form>
-          <div className={styles.footerBrand}>{ft.brand}</div>
+          </div>
+
+          {/* ── Footer ── */}
+          <div className={styles.cardFoot}>
+            <span className={styles.footLabel}>{ft.govFootLabel}</span>
+            <div className={styles.footGold} />
+          </div>
+
         </div>
-        {submitted && <FlowLoading />}
       </div>
+
+      {submitted && <FlowLoading />}
     </div>
   );
 }

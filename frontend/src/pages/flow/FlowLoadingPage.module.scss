@@ -1,0 +1,24 @@
+@use "../../styles/moi-vars" as *;
+
+.page {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  background: radial-gradient(circle at 10% 20%, rgba(11, 137, 146, 0.04) 0%, transparent 45%),
+              radial-gradient(circle at 90% 80%, rgba(162, 148, 117, 0.06) 0%, transparent 50%),
+              linear-gradient(135deg, #f5f8fa 0%, #e1eaf0 100%);
+  animation: fadeIn 0.4s ease-out;
+}
+
+.center {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 40px 16px 60px;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}

@@ -1,38 +1,113 @@
-.headerBar {
+@use "../../styles/moi-vars" as *;
+// ── Top bar shown on every flow page ────────────────────────────────────────
+
+.bar {
   width: 100%;
-  border-bottom: 1px solid #e5e7eb;
-  background: #ffffff;
-  padding: 8px 16px;
+  height: 56px;
+  background: $white;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 24px;
+  flex-shrink: 0;
+  position: sticky;
+  top: 0;
+  z-index: 10;
 }
 
-.headerInner {
-  margin: 0 auto;
+// ── Left: ministry identity ───────────────────────────────────────────────────
+
+.identity {
   display: flex;
-  max-width: 32rem; /* same max-w as card (max-w-lg) */
-  justify-content: flex-end;
+  align-items: center;
+  gap: 10px;
 }
+
+.seal {
+  width: 34px;
+  height: 34px;
+  background: $gradient;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.sealText {
+  font-size: 10px;
+  font-weight: 800;
+  color: $white;
+  letter-spacing: -0.3px;
+  line-height: 1;
+}
+
+.labels {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+}
+
+.labelEn {
+  font-size: 11px;
+  font-weight: 700;
+  color: $navy;
+  letter-spacing: 0.02em;
+  line-height: 1;
+}
+
+.labelAr {
+  font-size: 10px;
+  color: $text-muted;
+  line-height: 1;
+}
+
+// ── Right: language toggle ────────────────────────────────────────────────────
 
 .langBtn {
   display: inline-flex;
   align-items: center;
-  gap: 6px;
-  border-radius: 6px;
-  border: 1px solid #d1d5db;
-  background: #ffffff;
-  padding: 4px 10px;
-  font-size: 0.75rem;
-  font-weight: 500;
-  color: #374151;
-  box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+  gap: 5px;
+  border: 1px solid $border;
+  border-radius: $radius-sm;
+  background: $white;
+  padding: 5px 11px;
+  font-size: 12px;
+  font-weight: 600;
+  color: $navy;
   cursor: pointer;
-  text-decoration: none;
-  transition: background 0.15s;
+  transition:
+    background 0.15s,
+    border-color 0.15s;
+  font-family: inherit;
 
   &:hover {
-    background: #f9fafb;
+    background: $panel;
+    border-color: $border-dark;
   }
 
-  svg {
-    color: #6b7280;
-  }
+  @include focus-ring;
+}
+
+.globeIcon {
+  width: 13px;
+  height: 13px;
+  color: $teal;
+  flex-shrink: 0;
+}
+
+.logo {
+  height: 40px;
+  width: auto;
+  max-width: 100%;
+  object-fit: contain;
+  display: block;
+}
+
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 18px;
+  direction: ltr;
+  text-decoration: none;
 }

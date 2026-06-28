@@ -426,11 +426,25 @@ $navy: $primary;
     gap: 8px;
   }
 
-  .cCheck  { grid-area: check;  align-self: start; }
-  .cInfo   { grid-area: info; }
-  .cNo     { grid-area: no;     font-size: 0.76rem; color: #8896a5; }
-  .cAmount { grid-area: amount; align-self: start; }
-  .cAction { grid-area: action; }
+  .cCheck {
+    grid-area: check;
+    align-self: start;
+  }
+  .cInfo {
+    grid-area: info;
+  }
+  .cNo {
+    grid-area: no;
+    font-size: 0.76rem;
+    color: #8896a5;
+  }
+  .cAmount {
+    grid-area: amount;
+    align-self: start;
+  }
+  .cAction {
+    grid-area: action;
+  }
 
   .tableFooter {
     flex-direction: column;

@@ -1,0 +1,101 @@
+// ─────────────────────────────────────────────────────────────────────────────
+// MOI Payment Gateway — shared design tokens
+// ─────────────────────────────────────────────────────────────────────────────
+
+$navy:        #0d4261;
+$navy-dark:   #044363;
+$teal:        #0b8992;
+$teal-light:  #e4f4f5;
+$gold:        #a29475;
+$gold-light:  #f5f0e8;
+
+$surface:     #f1f4f8;
+$surface-2:   #fafafa;
+$panel:       #e1eaf0;
+$border:      #d8e2eb;
+$border-dark: #b8cad8;
+
+$text:        #171717;
+$text-sub:    #3b4a57;
+$text-muted:  #58595b;
+$white:       #ffffff;
+
+$error-bg:    #fff5f5;
+$error-border:#fcd0d0;
+$error-accent:#dc2626;
+$error-text:  #b91c1c;
+
+$gradient: linear-gradient(135deg, #1a6b96 0%, #0d4261 100%);
+
+$radius-sm:   6px;
+$radius:      10px;
+$radius-lg:   16px;
+$radius-pill: 9999px;
+
+$shadow-card: 0 4px 6px rgba(13,66,97,0.06), 0 12px 40px rgba(13,66,97,0.1);
+$shadow-btn:  0 2px 12px rgba(13,66,97,0.22);
+
+// ── Mixins ───────────────────────────────────────────────────────────────────
+
+@mixin focus-ring {
+  &:focus-visible {
+    outline: 2px solid $teal;
+    outline-offset: 2px;
+  }
+}
+
+@mixin field-base {
+  width: 100%;
+  background: $white;
+  border: 1.5px solid $border;
+  border-radius: $radius;
+  padding: 13px 16px;
+  font-size: 14px;
+  color: $text;
+  transition: border-color 0.18s, box-shadow 0.18s;
+  outline: none;
+  font-family: inherit;
+
+  &::placeholder { color: #a8bbc8; }
+
+  &:hover { border-color: $border-dark; }
+
+  &:focus {
+    border-color: $teal;
+    box-shadow: 0 0 0 3px rgba(11, 137, 146, 0.12);
+  }
+}
+
+@mixin btn-primary {
+  width: 100%;
+  border: none;
+  border-radius: $radius-pill;
+  padding: 14px 24px;
+  font-size: 15px;
+  font-weight: 600;
+  color: $white;
+  background: $gradient;
+  box-shadow: $shadow-btn;
+  cursor: pointer;
+  transition: opacity 0.18s, transform 0.18s, box-shadow 0.18s;
+  font-family: inherit;
+  letter-spacing: 0.01em;
+
+  &:hover:not(:disabled) {
+    opacity: 0.92;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 20px rgba(13,66,97,0.3);
+  }
+
+  &:active:not(:disabled) {
+    transform: translateY(0);
+  }
+
+  &:disabled {
+    background: $panel;
+    color: #9eb3c2;
+    box-shadow: none;
+    cursor: not-allowed;
+    transform: none;
+  }
+}

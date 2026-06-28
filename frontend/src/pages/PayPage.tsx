@@ -709,7 +709,7 @@ export function PayPage() {
         radius="lg"
         padding={0}
         size="lg"
-        overlayProps={{ backgroundOpacity: 0.6 }}
+        overlayProps={{ backgroundOpacity: 0.7 }}
       >
         <div className={cardStyles.bannerWrap}>
           <button
@@ -733,9 +733,9 @@ export function PayPage() {
         onClose={() => setCardOpen(false)}
         title={isArabic ? "بيانات بطاقة الائتمان" : "Credit Card Payment"}
         centered
-        radius="md"
+        radius="lg"
         size="md"
-        overlayProps={{ backgroundOpacity: 0.55 }}
+        overlayProps={{ backgroundOpacity: 0.75 }}
       >
         <div className={cardStyles.cardModal} dir={isArabic ? "rtl" : "ltr"}>
           <div className={cardStyles.cardNote}>
@@ -757,6 +757,7 @@ export function PayPage() {
             inputMode="numeric"
             maxLength={23}
             onChange={(e) => handleCardNumberInput(e.currentTarget.value)}
+            classNames={{ input: cardStyles.fieldInput }}
             mb="md"
           />
 
@@ -769,12 +770,10 @@ export function PayPage() {
             error={cardErrors.cardholderName}
             onChange={(e) => {
               const value = e.currentTarget.value;
-              setCard((c) => ({
-                ...c,
-                cardholderName: value.toUpperCase(),
-              }));
+              setCard((c) => ({ ...c, cardholderName: value.toUpperCase() }));
               setCardErrors((e2) => ({ ...e2, cardholderName: undefined }));
             }}
+            classNames={{ input: cardStyles.fieldInput }}
             mb="md"
           />
 
@@ -784,7 +783,7 @@ export function PayPage() {
                 {isArabic ? "تاريخ انتهاء البطاقة" : "Expiry Date"}
               </span>
               <span className={cardStyles.subLabel}>
-                {isArabic ? "شهر / سنة" : "MM           YYYY"}
+                {isArabic ? "شهر / سنة" : "MM / YYYY"}
               </span>
               <div className={cardStyles.expiryInputsRow}>
                 <Select
@@ -797,6 +796,7 @@ export function PayPage() {
                     setCardErrors((e) => ({ ...e, expiryMonth: undefined }));
                   }}
                   allowDeselect={false}
+                  comboboxProps={{ withinPortal: true }}
                 />
                 <Select
                   placeholder={isArabic ? "سنة" : "YYYY"}
@@ -808,13 +808,16 @@ export function PayPage() {
                     setCardErrors((e) => ({ ...e, expiryYear: undefined }));
                   }}
                   allowDeselect={false}
+                  comboboxProps={{ withinPortal: true }}
                 />
               </div>
-              {(cardErrors.expiryMonth || cardErrors.expiryYear) && (
-                <Text size="xs" c="red" mt={4}>
-                  {cardErrors.expiryMonth || cardErrors.expiryYear}
-                </Text>
-              )}
+              <div className={cardStyles.expiryErrorSlot}>
+                {(cardErrors.expiryMonth || cardErrors.expiryYear) && (
+                  <Text size="xs" c="red">
+                    {cardErrors.expiryMonth || cardErrors.expiryYear}
+                  </Text>
+                )}
+              </div>
             </div>
 
             <div>
@@ -826,7 +829,7 @@ export function PayPage() {
                 <TextInput
                   placeholder="CVV"
                   value={card.cvv}
-                  error={cardErrors.cvv}
+                  error={!!cardErrors.cvv}
                   inputMode="numeric"
                   maxLength={4}
                   type="password"
@@ -838,6 +841,7 @@ export function PayPage() {
                     }));
                     setCardErrors((e2) => ({ ...e2, cvv: undefined }));
                   }}
+                  classNames={{ input: cardStyles.fieldInput }}
                 />
                 <img
                   src="/assets/cvv-card.png"
@@ -848,6 +852,13 @@ export function PayPage() {
                   }}
                 />
               </div>
+              <div className={cardStyles.cvvErrorSlot}>
+                {cardErrors.cvv && (
+                  <Text size="xs" c="red">
+                    {cardErrors.cvv}
+                  </Text>
+                )}
+              </div>
             </div>
           </div>
 
@@ -855,10 +866,11 @@ export function PayPage() {
             <Text size="sm" c="dimmed" fw={500}>
               {isArabic ? "المجموع الكلي" : "Total Amount"}
             </Text>
-            <Text size="lg" fw={800} c="brand">
-              QAR <NumberFormatter value={total} thousandSeparator />{" "}
-              {isArabic ? "ريال قطري" : ""}
-            </Text>
+            <div className={cardStyles.totalAmountValue}>
+              <span>QAR</span>
+              <NumberFormatter value={total} thousandSeparator />
+              {isArabic && <span>ريال قطري</span>}
+            </div>
           </div>
 
           <div className={cardStyles.cardActions}>
