@@ -17,7 +17,7 @@ COPY src ./src
 RUN npm run build
 
 # Stage 2 – runtime (Playwright + Chromium already baked in)
-FROM mcr.microsoft.com/playwright:v1.52.0-jammy AS runtime
+FROM mcr.microsoft.com/playwright:v1.61.0-jammy AS runtime
 
 WORKDIR /app
 
