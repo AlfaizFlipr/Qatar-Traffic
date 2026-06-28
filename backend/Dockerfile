@@ -1,54 +1,32 @@
 # ── Backend Dockerfile ─────────────────────────────────────────
-# Multi-stage build: compile TypeScript → run lean Node image
+# Multi-stage build: compile TypeScript → run Playwright base image
+# Uses official mcr.microsoft.com/playwright image so we don't
+# need to manually install 100+ system packages (saves ~2 GB disk).
 # ───────────────────────────────────────────────────────────────
 
-# Stage 1 – builder
+# Stage 1 – builder (compile TypeScript)
 FROM node:20-slim AS builder
 
 WORKDIR /app
 
-# Install ALL deps (including devDeps needed to compile TS)
 COPY package*.json ./
-RUN npm ci
+RUN npm ci --ignore-scripts
 
-# Copy source and compile
 COPY tsconfig.json ./
 COPY src ./src
 RUN npm run build
 
-# Stage 2 – runtime
-FROM node:20-slim AS runtime
-
-# Playwright / Chromium dependencies
-RUN apt-get update && apt-get install -y \
-    curl \
-    libnss3 \
-    libatk-bridge2.0-0 \
-    libx11-xcb1 \
-    libxcomposite1 \
-    libxcursor1 \
-    libxdamage1 \
-    libxi6 \
-    libxtst6 \
-    libpangocairo-1.0-0 \
-    libcups2 \
-    libxrandr2 \
-    libasound2 \
-    libgbm1 \
-    libgtk-3-0 \
-    && rm -rf /var/lib/apt/lists/*
+# Stage 2 – runtime (Playwright + Chromium already baked in)
+FROM mcr.microsoft.com/playwright:v1.52.0-jammy AS runtime
 
 WORKDIR /app
 
-# Only production deps
+# Only production deps (skip postinstall – playwright browser already in base)
 COPY package*.json ./
-RUN npm ci --omit=dev
+RUN npm ci --omit=dev --ignore-scripts
 
 # Copy compiled output from builder
 COPY --from=builder /app/dist ./dist
-
-# Install Playwright Chromium browser
-RUN npx playwright install chromium
 
 EXPOSE 5000
 
