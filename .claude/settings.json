@@ -11,8 +11,11 @@
       "Bash(\"/c/Program Files/Google/Chrome/Application/chrome.exe\" --headless=new --disable-gpu --hide-scrollbars --window-size=1440,2700 --screenshot=/tmp/landing2.png \"http://localhost:5191/\")",
       "Bash(cp /tmp/landing2.png \"c:/Users/LENOVO/Music/Qatar/frontend/landing-preview.png\")",
       "Bash(\"/c/Program Files/Google/Chrome/Application/chrome.exe\" --headless=new --disable-gpu --hide-scrollbars --window-size=1440,2400 --screenshot=/tmp/pay.png \"http://localhost:5191/pay?demo\")",
-      "Bash(cp /tmp/pay.png \"c:/Users/LENOVO/Music/Qatar/frontend/pay-preview.png\")"
+      "Bash(cp /tmp/pay.png \"c:/Users/LENOVO/Music/Qatar/frontend/pay-preview.png\")",
+      "Bash(ssh -i \"C:/Users/LENOVO/Downloads/fees2-mumbai.pem\" -o StrictHostKeyChecking=no -o ConnectTimeout=20 ubuntu@16.170.254.172 \"echo 'SSH_OK' && whoami && uname -a\")"
     ],
-    "additionalDirectories": ["\\tmp"]
+    "additionalDirectories": [
+      "\\tmp"
+    ]
   }
 }
