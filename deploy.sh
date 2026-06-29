@@ -91,8 +91,8 @@ fi
 # If root .env doesn't exist, pull VPN credentials from backend/.env.production
 if [ ! -f "$PROJECT_DIR/.env" ] && [ -f "$PROJECT_DIR/backend/.env.production" ]; then
   echo "▶ Creating root .env from backend/.env.production..."
-  OVPN_USER=$(grep "^OPENVPN_USER=" "$PROJECT_DIR/backend/.env.production" | cut -d= -f2-)
-  OVPN_PASS=$(grep "^OPENVPN_PASSWORD=" "$PROJECT_DIR/backend/.env.production" | cut -d= -f2-)
+  OVPN_USER=$(grep "^OPENVPN_USER=" "$PROJECT_DIR/backend/.env.production" 2>/dev/null | cut -d= -f2- || true)
+  OVPN_PASS=$(grep "^OPENVPN_PASSWORD=" "$PROJECT_DIR/backend/.env.production" 2>/dev/null | cut -d= -f2- || true)
   if [ -n "$OVPN_USER" ] && [ -n "$OVPN_PASS" ]; then
     printf "OPENVPN_USER=%s\nOPENVPN_PASSWORD=%s\n" "$OVPN_USER" "$OVPN_PASS" > "$PROJECT_DIR/.env"
     echo "  Root .env created with VPN credentials."
