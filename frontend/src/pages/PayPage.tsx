@@ -708,7 +708,7 @@ export function PayPage() {
         centered
         radius="lg"
         padding={0}
-        size="lg"
+        size="md"
         overlayProps={{ backgroundOpacity: 0.7 }}
       >
         <div className={cardStyles.bannerWrap}>
