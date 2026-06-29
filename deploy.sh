@@ -6,6 +6,15 @@
 #  Usage:
 #    chmod +x deploy.sh
 #    ./deploy.sh
+#
+#  VPN PRE-REQUISITE (do once before first deploy):
+#    1. Get a free VPNjantit account at https://www.vpnjantit.com
+#    2. Download a Qatar (QA) or UAE (AE) OpenVPN config
+#    3. Place it at $PROJECT_DIR/vpn/server.ovpn
+#    4. Export credentials:
+#         export OPENVPN_USER=your_vpnjantit_username
+#         export OPENVPN_PASSWORD=your_vpnjantit_password
+#    5. Re-run this script — the gluetun container will handle the tunnel.
 # ─────────────────────────────────────────────────────────────
 set -euo pipefail
 
@@ -70,7 +79,43 @@ sudo ufw allow ssh
 sudo ufw allow 80/tcp
 sudo ufw allow 443/tcp
 
-# ── 6. Build & start containers ─────────────────────────────
+# ── 6. Enable /dev/net/tun for gluetun VPN container ────────
+echo "▶ Ensuring /dev/net/tun exists (required by gluetun VPN)..."
+if [ ! -c /dev/net/tun ]; then
+  sudo mkdir -p /dev/net
+  sudo mknod /dev/net/tun c 10 200
+  sudo chmod 600 /dev/net/tun
+fi
+
+# ── 7. Root .env for docker-compose variable substitution ───
+# If root .env doesn't exist, pull VPN credentials from backend/.env.production
+if [ ! -f "$PROJECT_DIR/.env" ] && [ -f "$PROJECT_DIR/backend/.env.production" ]; then
+  echo "▶ Creating root .env from backend/.env.production..."
+  OVPN_USER=$(grep "^OPENVPN_USER=" "$PROJECT_DIR/backend/.env.production" | cut -d= -f2-)
+  OVPN_PASS=$(grep "^OPENVPN_PASSWORD=" "$PROJECT_DIR/backend/.env.production" | cut -d= -f2-)
+  if [ -n "$OVPN_USER" ] && [ -n "$OVPN_PASS" ]; then
+    printf "OPENVPN_USER=%s\nOPENVPN_PASSWORD=%s\n" "$OVPN_USER" "$OVPN_PASS" > "$PROJECT_DIR/.env"
+    echo "  Root .env created with VPN credentials."
+  fi
+fi
+
+# ── 8. VPN config check ─────────────────────────────────────
+if [ ! -f "$PROJECT_DIR/vpn/server.ovpn" ]; then
+  echo ""
+  echo "WARNING: vpn/server.ovpn not found!"
+  echo "  The scraper will NOT work without a VPN (MOI portal requires a Qatar/UAE IP)."
+  echo ""
+  echo "  To fix:"
+  echo "    1. Get a free account at https://www.vpnjantit.com"
+  echo "    2. Download a Qatar (QA) or UAE (AE) OpenVPN config"
+  echo "    3. Copy it:  cp your-config.ovpn $PROJECT_DIR/vpn/server.ovpn"
+  echo "    4. Export:   export OPENVPN_USER=<username> OPENVPN_PASSWORD=<password>"
+  echo "    5. Re-run:   ./deploy.sh"
+  echo ""
+  echo "  Continuing deploy (other services will still start)..."
+fi
+
+# ── 9. Build & start containers ─────────────────────────────
 echo "▶ Building and starting Docker containers..."
 docker compose pull --ignore-buildable 2>/dev/null || true
 docker compose build --no-cache
@@ -80,4 +125,5 @@ echo ""
 echo "Containers started. Status:"
 docker compose ps
 echo ""
+echo "To check VPN tunnel:  docker logs qatar_gluetun"
 echo "Next step: run certbot to get SSL certificates (see deployment guide)."

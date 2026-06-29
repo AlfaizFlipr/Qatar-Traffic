@@ -1,0 +1,37 @@
+# ─────────────────────────────────────────────────────────────
+#  VPNjantit OpenVPN config template
+#
+#  SETUP (do this on the AWS server):
+#
+#  1. Go to https://www.vpnjantit.com  → Login / Register (free)
+#  2. Go to "Create Account" → choose OpenVPN
+#  3. Select country: Qatar (QA) if available, otherwise UAE (AE)
+#     — UAE IPs can reach the Qatar MOI portal
+#  4. Download the .ovpn config file
+#  5. Copy it to this directory as  server.ovpn:
+#        scp -i fees2-mumbai.pem your-config.ovpn ubuntu@<EC2-IP>:~/qatar/vpn/server.ovpn
+#  6. Set credentials in the project root .env (NOT committed to git):
+#        echo "OPENVPN_USER=your_username"   >> ~/qatar/.env
+#        echo "OPENVPN_PASSWORD=your_password" >> ~/qatar/.env
+#  7. If your .ovpn file has an inline  <auth-user-pass>  block,
+#     remove it — gluetun injects credentials via env vars.
+#
+#  IMPORTANT: server.ovpn is gitignored (contains server address + port).
+#             Never commit it.
+# ─────────────────────────────────────────────────────────────
+
+# Paste the contents of your downloaded .ovpn file below this line,
+# or replace this entire file with the downloaded config.
+
+client
+dev tun
+proto udp
+remote qa1.vpnjantit.com 1194
+resolv-retry infinite
+nobind
+persist-key
+persist-tun
+remote-cert-tls server
+cipher AES-256-CBC
+verb 3
+# auth-user-pass   ← remove this line; gluetun handles credentials

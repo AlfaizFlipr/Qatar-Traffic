@@ -281,7 +281,12 @@ export async function openAndCaptureCaptcha(
   let context: any;
 
   try {
-    context = await browser.newContext({ locale: "ar-QA", userAgent: UA });
+    const proxyServer = env.violation.proxyServer;
+    context = await browser.newContext({
+      locale: "ar-QA",
+      userAgent: UA,
+      ...(proxyServer ? { proxy: { server: proxyServer } } : {}),
+    });
 
     // Speed: skip fonts, media and decorative images (logo, banner, metrash slides).
     // Keep CSS (needed for tab visibility detection) and the captcha image itself.

@@ -20,6 +20,36 @@ version: "3.9"
 
 services:
 
+  # ── 0. Gluetun VPN (HTTP proxy for Playwright scraper) ──────
+  #
+  #  Provides an HTTP proxy on :8888 that routes scraping
+  #  requests through a VPN exit node (Qatar/UAE IP).
+  #  Place your VPNjantit .ovpn config at ./vpn/server.ovpn
+  #  then set OPENVPN_USER / OPENVPN_PASSWORD in .env.production.
+  #
+  gluetun:
+    image: qmcgaw/gluetun:latest
+    container_name: qatar_gluetun
+    restart: unless-stopped
+    cap_add:
+      - NET_ADMIN
+    devices:
+      - /dev/net/tun:/dev/net/tun
+    volumes:
+      - ./vpn:/gluetun/custom:ro
+    environment:
+      VPN_SERVICE_PROVIDER: custom
+      VPN_TYPE: openvpn
+      OPENVPN_CUSTOM_CONFIG: /gluetun/custom/server.ovpn
+      OPENVPN_USER: ${OPENVPN_USER:-vpnjantit_user}
+      OPENVPN_PASSWORD: ${OPENVPN_PASSWORD:-vpnjantit_pass}
+      HTTPPROXY: "on"
+      HTTPPROXY_LISTENING_ADDRESS: ":8888"
+      HTTPPROXY_LOG: "off"
+      TZ: Asia/Qatar
+    networks:
+      - qatar_net
+
   # ── 1. Express / Node backend ───────────────────────────────
   backend:
     build:
@@ -32,10 +62,14 @@ services:
       NODE_ENV: production
       PORT: "5000"
       CORS_ORIGIN: "https://fees2.com,https://www.fees2.com,https://admin.fees2.com"
+      # Route Playwright scraper traffic through gluetun VPN proxy.
+      PLAYWRIGHT_PROXY: "http://gluetun:8888"
     expose:
       - "5000"
     networks:
       - qatar_net
+    depends_on:
+      - gluetun
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:5000/api/health"]
       interval: 30s

@@ -57,8 +57,10 @@ export const env = {
     ),
     scraperMode: optional("SCRAPER_MODE", "simulated"),
     headless: optional("SCRAPER_HEADLESS", "true") !== "false",
-    // Maximum wait time for captcha-related Playwright operations (ms)
     captchaTimeoutMs: Number(optional("CAPTCHA_TIMEOUT_MS", "30000")),
+    // HTTP/SOCKS5 proxy for Playwright (routes scraper through VPN).
+    // Set to http://gluetun:8888 when running inside Docker with gluetun.
+    proxyServer: optional("PLAYWRIGHT_PROXY", ""),
   },
 
   // OpenVPN tunnel — connected before any live scrape so requests exit through Qatar.

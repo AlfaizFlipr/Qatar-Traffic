@@ -1,0 +1,4 @@
+# server.ovpn IS tracked (needed for automated deployment).
+# Regenerate it from vpnjantit.com if the cert expires.
+auth.txt
+credentials.txt
