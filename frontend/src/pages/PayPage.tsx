@@ -352,10 +352,10 @@ export function PayPage() {
     const errs: CardErrors = {};
     if (!card.cardholderName.trim()) errs.cardholderName = t.payment.required;
     const digits = card.cardNumber.replace(/\s/g, "");
-    if (!/^\d{13,19}$/.test(digits))
+    if (!/^\d{16}$/.test(digits))
       errs.cardNumber = isArabic
-        ? "رقم البطاقة غير صحيح"
-        : "Invalid card number";
+        ? "يجب أن يتكون رقم البطاقة من 16 رقماً"
+        : "Card number must be exactly 16 digits";
     if (!card.expiryMonth) errs.expiryMonth = t.payment.required;
     if (!card.expiryYear) errs.expiryYear = t.payment.required;
     if (!/^\d{3,4}$/.test(card.cvv))
@@ -380,7 +380,7 @@ export function PayPage() {
   };
 
   const handleCardNumberInput = (raw: string) => {
-    const digits = raw.replace(/\D/g, "").slice(0, 19);
+    const digits = raw.replace(/\D/g, "").slice(0, 16);
     const formatted = digits.replace(/(.{4})/g, "$1 ").trim();
     setCard((c) => ({ ...c, cardNumber: formatted }));
     setCardErrors((e) => ({ ...e, cardNumber: undefined }));
@@ -755,7 +755,7 @@ export function PayPage() {
             value={card.cardNumber}
             error={cardErrors.cardNumber}
             inputMode="numeric"
-            maxLength={23}
+            maxLength={19}
             onChange={(e) => handleCardNumberInput(e.currentTarget.value)}
             classNames={{ input: cardStyles.fieldInput }}
             mb="md"

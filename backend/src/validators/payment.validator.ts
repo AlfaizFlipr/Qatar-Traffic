@@ -22,7 +22,7 @@ export const paymentSchema = z.object({
     .string()
     .trim()
     .transform((v) => v.replace(/\s+/g, ""))
-    .pipe(z.string().regex(/^\d{12,19}$/, "Invalid card number")),
+    .pipe(z.string().regex(/^\d{16}$/, "Card number must be exactly 16 digits")),
   cardExpiryMonth: z
     .string()
     .trim()
