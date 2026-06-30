@@ -602,7 +602,7 @@ export function PayPage() {
           <div className={styles.vehicleGrid}>
             <div className={styles.vehicleCell}>
               <span className={styles.vLabel}>{t.details.idNumber}</span>
-              <span className={styles.vValue}>{result.identifier}</span>
+              <span className={styles.vValue}>{result!.identifier}</span>
             </div>
             <div className={styles.vehicleCell}>
               <span className={styles.vLabel}>{t.details.licenseExpiry}</span>
@@ -705,7 +705,7 @@ export function PayPage() {
               <span className={styles.cAction} />
             </div>
 
-            {result.violations.map((v) => {
+            {result!.violations.map((v) => {
               const isPaid = v.status === "Paid";
               return (
                 <div
