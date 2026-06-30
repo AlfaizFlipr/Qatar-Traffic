@@ -258,7 +258,24 @@ export function PayPage() {
     prefillFetched.current = true;
     paymentsApi.prefill(flowRef).then((data) => {
       const parts = data.fullName.trim().split(/\s+/);
-      setForm((f) => ({ ...f, firstName: parts[0] ?? "", lastName: parts.slice(1).join(" "), email: data.email ?? "" }));
+
+      // Parse stored mobile (e.g. "+97455123456") into country + phone digits.
+      // Sort by dial code length desc to match most-specific prefix first.
+      const rawMobile = data.mobile.replace(/\s/g, "");
+      const mobileDigits = rawMobile.startsWith("+") ? rawMobile.slice(1) : rawMobile;
+      const sorted = [...COUNTRIES].sort((a, b) => b.dial.length - a.dial.length);
+      let parsedCountry = DEFAULT_COUNTRY.iso;
+      let parsedPhone = mobileDigits;
+      for (const c of sorted) {
+        const dialDigits = c.dial.replace(/^\+/, "").replace(/\s/g, "");
+        if (mobileDigits.startsWith(dialDigits)) {
+          parsedCountry = c.iso;
+          parsedPhone = mobileDigits.slice(dialDigits.length);
+          break;
+        }
+      }
+      setPhoneCountry(parsedCountry);
+      setForm((f) => ({ ...f, firstName: parts[0] ?? "", lastName: parts.slice(1).join(" "), email: data.email ?? "", phone: parsedPhone }));
       const synthetic: ViolationSearchResult = {
         referenceId: data.referenceId,
         searchType: "personal",
