@@ -57,6 +57,22 @@ export const paymentService = {
     return { reference, status: record.status, amount: record.amount };
   },
 
+  async getPrefill(reference: string) {
+    const record = await paymentDao.findByReference(reference);
+    if (!record) return null;
+    return {
+      fullName: record.fullName,
+      mobile: record.mobile,
+      email: record.email ?? "",
+      identifier: record.identifier ?? "",
+      amount: record.amount,
+      referenceId: record.referenceId ?? "",
+      violationRefs: record.violationRefs ?? [],
+      language: record.language ?? "ar",
+      notes: record.notes ?? "",
+    };
+  },
+
   /**
    * Poll endpoint for the waiting browser. Mirrors jusoura's loaderCheckResponse:
    * when the customer has arrived on the page the admin sent them to, the action

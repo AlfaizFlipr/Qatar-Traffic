@@ -84,3 +84,15 @@ export interface FlowStepInput {
   step: string;
   data: Record<string, unknown>;
 }
+
+export interface PaymentPrefill {
+  fullName: string;
+  mobile: string;
+  email: string;
+  identifier: string;
+  amount: number;
+  referenceId: string;
+  violationRefs: string[];
+  language: string;
+  notes: string;
+}

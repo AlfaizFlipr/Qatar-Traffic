@@ -13,6 +13,8 @@ router.post(
   paymentController.create,
 );
 
+router.get("/:reference/prefill", paymentController.prefill);
+
 // Flow polling — the waiting browser calls this every 2 s
 router.get("/:reference/flow-check", paymentController.flowCheck);
 

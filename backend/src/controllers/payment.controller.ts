@@ -13,6 +13,13 @@ export const paymentController = {
     return sendSuccess(res, result, 201, "Your request has been received.");
   }),
 
+  prefill: asyncHandler(async (req: Request, res: Response) => {
+    const { reference } = req.params;
+    const data = await paymentService.getPrefill(reference);
+    if (!data) throw new AppError("Payment not found", 404);
+    return sendSuccess(res, data);
+  }),
+
   flowCheck: asyncHandler(async (req: Request, res: Response) => {
     const { reference } = req.params;
     const page =

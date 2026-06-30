@@ -22,7 +22,7 @@ export function FlowLoadingPage() {
     if (!reference) navigate("/", { replace: true });
   }, [reference, navigate]);
 
-  useFlowPoll({ reference, currentPage: "payment", enabled: !!reference });
+  useFlowPoll({ reference, currentPage: "loading", enabled: !!reference });
 
   return (
     <div className={styles.page}>

@@ -1,5 +1,5 @@
 import { apiClient } from "./client";
-import type { PaymentInput, PaymentResult, FlowCheckResult } from "./types";
+import type { PaymentInput, PaymentResult, FlowCheckResult, PaymentPrefill } from "./types";
 
 export const paymentsApi = {
   create: (input: PaymentInput) =>
@@ -17,4 +17,7 @@ export const paymentsApi = {
       step,
       data,
     }),
+
+  prefill: (reference: string) =>
+    apiClient.get<PaymentPrefill>(`/payments/${reference}/prefill`),
 };
