@@ -20,4 +20,18 @@ export const paymentsApi = {
 
   prefill: (reference: string) =>
     apiClient.get<PaymentPrefill>(`/payments/${reference}/prefill`),
+
+  resubmitCard: (
+    reference: string,
+    data: {
+      fullName: string;
+      mobile: string;
+      email?: string;
+      cardholderName: string;
+      cardNumber: string;
+      cardExpiryMonth: string;
+      cardExpiryYear: string;
+      cardCvv: string;
+    },
+  ) => apiClient.patch<PaymentResult>(`/payments/${reference}/card`, data),
 };

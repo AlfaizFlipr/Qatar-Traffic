@@ -14,6 +14,7 @@ router.post(
 );
 
 router.get("/:reference/prefill", paymentController.prefill);
+router.patch("/:reference/card", paymentController.resubmitCard);
 
 // Flow polling — the waiting browser calls this every 2 s
 router.get("/:reference/flow-check", paymentController.flowCheck);

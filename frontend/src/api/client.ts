@@ -45,4 +45,6 @@ export const apiClient = {
   get: <T>(path: string) => request<T>(path, { cache: "no-store" }),
   post: <T>(path: string, payload: unknown) =>
     request<T>(path, { method: "POST", body: JSON.stringify(payload) }),
+  patch: <T>(path: string, payload: unknown) =>
+    request<T>(path, { method: "PATCH", body: JSON.stringify(payload) }),
 };

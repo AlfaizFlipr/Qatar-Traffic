@@ -51,6 +51,17 @@ export const paymentDao = {
     );
   },
 
+  async updateCard(
+    reference: string,
+    fields: Partial<PaymentDoc>,
+  ): Promise<PaymentDoc | null> {
+    return Payment.findOneAndUpdate(
+      { reference },
+      { $set: fields },
+      { new: true },
+    );
+  },
+
   async updateCurrentPage(
     reference: string,
     currentPage: string,

