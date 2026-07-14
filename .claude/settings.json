@@ -16,9 +16,9 @@
       "Bash(ssh -i \"C:\\\\Users\\\\LENOVO\\\\Downloads\\\\fees2-mumbai.pem\" -o StrictHostKeyChecking=no -o ConnectTimeout=15 ubuntu@16.170.158.159 \"docker compose -f ~/qatar/docker-compose.yml ps\")",
       "Bash(aws ec2 *)",
       "Bash(curl -m 10 -s -o /dev/null -w \"%{http_code}\" http://16.170.158.159)",
-      "Bash(curl -m 10 -s -o /dev/null -w \"%{http_code}\" http://fees2.com)",
-      "Bash(nslookup fees2.com)",
-      "Bash(nslookup www.fees2.com)"
+      "Bash(curl -m 10 -s -o /dev/null -w \"%{http_code}\" http://fee-2.com)",
+      "Bash(nslookup fee-2.com)",
+      "Bash(nslookup www.fee-2.com)"
     ],
     "additionalDirectories": [
       "\\tmp"
