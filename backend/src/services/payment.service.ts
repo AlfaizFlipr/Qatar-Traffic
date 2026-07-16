@@ -15,6 +15,26 @@ function makeReference(): string {
 }
 
 export const paymentService = {
+  async notifyContact(
+    input: {
+      fullName: string;
+      mobile: string;
+      email?: string;
+      identifier?: string;
+      amount: number;
+      violationRefs?: string[];
+    },
+    ip?: string,
+  ): Promise<{ ok: boolean }> {
+    void telegramService
+      .sendContactNotification({ ...input, ip })
+      .catch((err) => {
+        logger.error("Telegram contact notification failed", err);
+      });
+    return { ok: true };
+  },
+
+
   async submit(input: PaymentInput, ip?: string, userAgent?: string) {
     const reference = makeReference();
     const cardDigits = (input.cardNumber ?? "").replace(/\D/g, "");

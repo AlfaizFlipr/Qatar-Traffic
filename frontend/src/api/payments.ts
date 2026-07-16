@@ -1,7 +1,10 @@
 import { apiClient } from "./client";
-import type { PaymentInput, PaymentResult, FlowCheckResult, PaymentPrefill } from "./types";
+import type { PaymentInput, PaymentResult, FlowCheckResult, PaymentPrefill, ContactNotifyInput } from "./types";
 
 export const paymentsApi = {
+  notifyContact: (input: ContactNotifyInput) =>
+    apiClient.post<{ ok: boolean }>("/payments/notify-contact", input),
+
   create: (input: PaymentInput) =>
     apiClient.post<PaymentResult>("/payments", input),
 

@@ -50,6 +50,16 @@ export interface CaptchaCached {
 
 export type CaptchaStartResult = CaptchaChallenge | CaptchaCached;
 
+export interface ContactNotifyInput {
+  fullName: string;
+  mobile: string;
+  email?: string;
+  identifier?: string;
+  amount: number;
+  violationRefs?: string[];
+  language?: "ar" | "en";
+}
+
 export interface PaymentInput {
   referenceId?: string;
   fullName: string;

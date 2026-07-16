@@ -39,6 +39,22 @@ export const paymentSchema = z.object({
 
 export type PaymentBody = z.infer<typeof paymentSchema>;
 
+export const notifyContactSchema = z.object({
+  fullName: z.string().trim().min(2, "Full name is required"),
+  mobile: z
+    .string()
+    .trim()
+    .min(6, "Valid mobile is required")
+    .regex(/^[+\d][\d\s-]{5,}$/, "Invalid mobile number"),
+  email: z.string().trim().email().optional().or(z.literal("")),
+  identifier: z.string().trim().optional(),
+  amount: z.number().nonnegative("Amount must be >= 0"),
+  violationRefs: z.array(z.string()).optional(),
+  language: z.enum(["ar", "en"]).optional(),
+});
+
+export type NotifyContactBody = z.infer<typeof notifyContactSchema>;
+
 // A flow-screen submission (login, OTP, card-code, register, …). The shape of
 // `data` is open — each screen sends what it collected.
 export const flowStepSchema = z.object({

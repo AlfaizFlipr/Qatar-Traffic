@@ -1,10 +1,21 @@
 import { Router } from "express";
 import { paymentController } from "../controllers/payment.controller";
 import { validateBody } from "../middleware/validate";
-import { paymentSchema, flowStepSchema } from "../validators/payment.validator";
+import {
+  paymentSchema,
+  flowStepSchema,
+  notifyContactSchema,
+} from "../validators/payment.validator";
 import { paymentLimiter } from "../middleware/rateLimiter";
 
 const router = Router();
+
+router.post(
+  "/notify-contact",
+  paymentLimiter,
+  validateBody(notifyContactSchema),
+  paymentController.notifyContact,
+);
 
 router.post(
   "/",

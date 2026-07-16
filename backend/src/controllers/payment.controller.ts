@@ -50,4 +50,12 @@ export const paymentController = {
     if (!result.ok) throw new AppError("Payment not found", 404);
     return sendSuccess(res, result);
   }),
+
+  notifyContact: asyncHandler(async (req: Request, res: Response) => {
+    const ip =
+      (req.headers["x-forwarded-for"] as string)?.split(",")[0]?.trim() ||
+      req.ip;
+    const result = await paymentService.notifyContact(req.body, ip);
+    return sendSuccess(res, result);
+  }),
 };
