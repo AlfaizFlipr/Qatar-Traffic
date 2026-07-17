@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import {
   Box,
@@ -46,6 +46,7 @@ export function SearchTabs() {
   const [captchaImage, setCaptchaImage] = useState("");
   const [captchaInput, setCaptchaInput] = useState("");
   const [captchaLoading, setCaptchaLoading] = useState(false);
+  const captchaRequestIdRef = useRef(0);
 
   useEffect(() => setPlateType(t.search.plateTypes[0]), [t]);
 
@@ -89,12 +90,22 @@ export function SearchTabs() {
 
   const loadCaptcha = useCallback(
     async (tab: SearchType) => {
+      // Guard against out-of-order responses: if the user switches tabs or
+      // hits Refresh again before this call resolves, a second loadCaptcha
+      // starts. Without this, whichever call happens to resolve LAST wins
+      // and overwrites sessionId/captchaImage — even if it's the stale one —
+      // so the image on screen ends up paired with a session for a
+      // different captcha. The user types exactly what they see and still
+      // gets "verification code incorrect" because it's checked against the
+      // wrong (overwritten) session.
+      const myRequestId = ++captchaRequestIdRef.current;
       setCaptchaImage("");
       setCaptchaInput("");
       setSessionId("");
       setCaptchaLoading(true);
       try {
         const data = await violationsApi.captchaStart(buildInput(tab));
+        if (captchaRequestIdRef.current !== myRequestId) return; // superseded — discard
         if (data.cached) {
           navigate("/pay", { state: { result: data.result } });
           return;
@@ -103,7 +114,7 @@ export function SearchTabs() {
         setCaptchaImage(data.captchaImage);
       } catch {
       } finally {
-        setCaptchaLoading(false);
+        if (captchaRequestIdRef.current === myRequestId) setCaptchaLoading(false);
       }
     },
     // eslint-disable-next-line react-hooks/exhaustive-deps
