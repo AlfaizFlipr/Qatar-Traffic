@@ -27,56 +27,57 @@ export function LoadingOverlay({
   visible,
   onRetry,
   onCancel,
-  maxSeconds = 65,
+  // The live scraper's captcha/submit round-trip typically finishes in ~5-8s
+  // (pre-warmed page pool + tight timeouts); this is a generous safety-net
+  // ceiling, not the expected wait — keep it in sync with reality so the
+  // countdown/messages don't promise a much longer wait than actually happens.
+  maxSeconds = 20,
 }: LoadingOverlayProps) {
   const { isArabic } = useLang();
   const messages = isArabic ? MESSAGES_AR : MESSAGES_EN;
 
-  const [elapsed, setElapsed] = useState(0);
-  const [msgIndex, setMsgIndex] = useState(0);
+  const [elapsedMs, setElapsedMs] = useState(0);
   const [timedOut, setTimedOut] = useState(false);
-  const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
-  const msgTimerRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const tickRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const startRef = useRef(0);
 
   useEffect(() => {
     if (!visible) {
-      clearInterval(timerRef.current!);
-      clearInterval(msgTimerRef.current!);
-      setElapsed(0);
-      setMsgIndex(0);
+      clearInterval(tickRef.current!);
+      setElapsedMs(0);
       setTimedOut(false);
       return;
     }
 
-    setElapsed(0);
-    setMsgIndex(0);
+    startRef.current = Date.now();
+    setElapsedMs(0);
     setTimedOut(false);
 
-    timerRef.current = setInterval(() => {
-      setElapsed((prev) => {
-        const next = prev + 1;
-        if (next >= maxSeconds) {
-          setTimedOut(true);
-          clearInterval(timerRef.current!);
-        }
-        return next;
-      });
-    }, 1000);
+    // Derive elapsed time from a real timestamp on every tick (rather than
+    // incrementing a counter) so the display never drifts even if a tick
+    // fires a little late — a frequent tick just keeps it visually smooth.
+    tickRef.current = setInterval(() => {
+      const next = Date.now() - startRef.current;
+      setElapsedMs(next);
+      if (next >= maxSeconds * 1000) {
+        setTimedOut(true);
+        clearInterval(tickRef.current!);
+      }
+    }, 200);
 
-    msgTimerRef.current = setInterval(() => {
-      setMsgIndex((i) => (i + 1) % messages.length);
-    }, 10000);
+    return () => clearInterval(tickRef.current!);
+  }, [visible, maxSeconds]);
 
-    return () => {
-      clearInterval(timerRef.current!);
-      clearInterval(msgTimerRef.current!);
-    };
-  }, [visible, maxSeconds, messages.length]);
+  const elapsed = Math.min(maxSeconds, Math.floor(elapsedMs / 1000));
+  const msgIndex = Math.min(
+    messages.length - 1,
+    Math.floor(elapsedMs / ((maxSeconds * 1000) / messages.length)),
+  );
 
   if (!visible) return null;
 
   const remaining = Math.max(0, maxSeconds - elapsed);
-  const progress = Math.min(100, (elapsed / maxSeconds) * 100);
+  const progress = Math.min(100, (elapsedMs / (maxSeconds * 1000)) * 100);
 
   return (
     <div className={styles.backdrop} dir={isArabic ? "rtl" : "ltr"}>
@@ -115,8 +116,8 @@ export function LoadingOverlay({
             </h2>
             <p className={styles.subtitle}>
               {isArabic
-                ? "جارٍ استرداد بيانات المخالفات المرورية. قد تستغرق هذه العملية حتى 60 ثانية."
-                : "We are retrieving your traffic violation information. This process may take up to 60 seconds."}
+                ? `جارٍ استرداد بيانات المخالفات المرورية. قد تستغرق هذه العملية حتى ${maxSeconds} ثانية.`
+                : `We are retrieving your traffic violation information. This process may take up to ${maxSeconds} seconds.`}
             </p>
 
             <div className={styles.msgBox}>
@@ -165,7 +166,9 @@ export function LoadingOverlay({
         ) : (
           <>
             <h2 className={styles.title}>
-              {isArabic ? "استغرق الطلب وقتًا أطول" : "This is taking longer than expected"}
+              {isArabic
+                ? "استغرق الطلب وقتًا أطول"
+                : "This is taking longer than expected"}
             </h2>
             <p className={styles.subtitle}>
               {isArabic
