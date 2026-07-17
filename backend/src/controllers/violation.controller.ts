@@ -18,8 +18,9 @@ export const violationController = {
 
   // Step 2 — verify the typed CAPTCHA and return the parsed violations.
   captchaSubmit: asyncHandler(async (req: Request, res: Response) => {
-    const { sessionId, captchaCode } = req.body;
-    const result = await captchaService.submit(sessionId, captchaCode);
+    const { sessionId, captchaCode, identifier } = req.body;
+    const ip = (req.headers["x-forwarded-for"] as string)?.split(",")[0]?.trim() || req.ip;
+    const result = await captchaService.submit(sessionId, captchaCode, ip, identifier);
     return sendSuccess(res, result, 200);
   }),
 

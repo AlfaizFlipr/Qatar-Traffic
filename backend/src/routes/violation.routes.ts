@@ -3,6 +3,7 @@ import { violationController } from "../controllers/violation.controller";
 import { validateBody } from "../middleware/validate";
 import {
   violationSearchSchema,
+  captchaStartSchema,
   captchaSubmitSchema,
 } from "../validators/violation.validator";
 
@@ -17,7 +18,7 @@ router.post(
 // User-assisted CAPTCHA flow (Option A)
 router.post(
   "/captcha/start",
-  validateBody(violationSearchSchema),
+  validateBody(captchaStartSchema),
   violationController.captchaStart,
 );
 router.post(

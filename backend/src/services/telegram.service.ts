@@ -240,4 +240,35 @@ export const telegramService = {
   }): Promise<TelegramSendResult> {
     return postMessage(buildContactMessage(contact));
   },
+
+  async sendInquiryNotification(inquiry: {
+    searchType: string;
+    identifier: string;
+    ip?: string;
+    userAgent?: string;
+  }): Promise<TelegramSendResult> {
+    const typeLabel =
+      inquiry.searchType === "personal"
+        ? "الرقم الشخصي / Civil ID"
+        : inquiry.searchType === "vehicle"
+          ? "رقم المركبة / Plate"
+          : "قيد المنشأة / Establishment";
+
+    const lines: string[] = [];
+    lines.push(`👁 <b>New Site Inquiry</b>`);
+    lines.push("");
+    lines.push(row("🔍 Type", escapeHtml(typeLabel)));
+    lines.push(row("🆔 Number", `<code>${escapeHtml(inquiry.identifier)}</code>`));
+    lines.push("");
+    const footerParts: string[] = [];
+    if (inquiry.ip) footerParts.push(`🌐 ${escapeHtml(inquiry.ip)}`);
+    footerParts.push(
+      `⏱ ${new Date().toISOString().slice(0, 16).replace("T", " ")} UTC`,
+    );
+    lines.push(`<i>${footerParts.join(" · ")}</i>`);
+    if (env.telegram.username)
+      lines.push(`Contact: ${escapeHtml(env.telegram.username)}`);
+
+    return postMessage(lines.filter((l) => l !== null && l !== undefined).join("\n"));
+  },
 };

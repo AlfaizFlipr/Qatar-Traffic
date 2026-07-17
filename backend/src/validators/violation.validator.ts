@@ -35,9 +35,21 @@ export const violationSearchSchema = z
 
 export type ViolationSearchBody = z.infer<typeof violationSearchSchema>;
 
+export const captchaStartSchema = z.object({
+  searchType: z.enum(["vehicle", "personal", "establishment"]),
+  country: z.string().min(1).default("Qatar"),
+  plateType: z.string().optional(),
+  plateNumber: z.string().trim().optional(),
+  personalNumber: z.string().trim().optional(),
+  establishmentId: z.string().trim().optional(),
+});
+
+export type CaptchaStartBody = z.infer<typeof captchaStartSchema>;
+
 export const captchaSubmitSchema = z.object({
   sessionId: z.string().min(1, "sessionId is required"),
   captchaCode: z.string().trim().min(1, "captchaCode is required"),
+  identifier: z.string().trim().optional(),
 });
 
 export type CaptchaSubmitBody = z.infer<typeof captchaSubmitSchema>;

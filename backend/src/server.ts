@@ -2,10 +2,12 @@ import { createApp } from "./app";
 import { connectDatabase, disconnectDatabase } from "./config/db";
 import { env, isTelegramConfigured } from "./config/env";
 import { logger } from "./utils/logger";
+import { initializePool, shutdownPool } from "./services/captcha/pagePool";
 
 async function bootstrap() {
   try {
     await connectDatabase();
+    await initializePool();
   } catch (err) {
     logger.error(
       "Failed to connect to MongoDB. Is it running? URI=" + env.mongoUri,
@@ -35,6 +37,7 @@ async function bootstrap() {
   const shutdown = async (signal: string) => {
     logger.info(`Received ${signal}, shutting down...`);
     server.close(async () => {
+      await shutdownPool();
       await disconnectDatabase();
       process.exit(0);
     });

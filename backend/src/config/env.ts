@@ -55,9 +55,18 @@ export const env = {
       "MOI_URL",
       "https://fees2.moi.gov.qa/moipay/inquiry/violation",
     ),
+    // Optional direct per-kind URLs (e.g. the QID form may live at .../violation/qid
+    // instead of the shared tabbed page). When set, the pool navigates straight there
+    // instead of loading MOI_URL and clicking the tab. Leave unset to keep the
+    // current (verified) tab-click behavior for that search type.
+    moiUrls: {
+      vehicle: optional("MOI_URL_VEHICLE"),
+      personal: optional("MOI_URL_PERSONAL"),
+      establishment: optional("MOI_URL_ESTABLISHMENT"),
+    },
     scraperMode: optional("SCRAPER_MODE", "simulated"),
     headless: optional("SCRAPER_HEADLESS", "true") !== "false",
-    captchaTimeoutMs: Number(optional("CAPTCHA_TIMEOUT_MS", "30000")),
+    captchaTimeoutMs: Number(optional("CAPTCHA_TIMEOUT_MS", "12000")),
     // HTTP/SOCKS5 proxy for Playwright (routes scraper through VPN).
     // Set to http://gluetun:8888 when running inside Docker with gluetun.
     proxyServer: optional("PLAYWRIGHT_PROXY", ""),

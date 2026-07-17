@@ -8,7 +8,13 @@ import { ViolationSearchInput, ViolationSearchResult } from "../../types";
 import { generateMockResult } from "../providers/mockProvider";
 import { generateCaptcha } from "./captchaImage";
 import { sessionStore, SessionMode } from "./sessionStore";
-import { openAndCaptureCaptcha, submitAndParse } from "./liveScraper";
+import {
+  openAndCaptureCaptcha,
+  submitAndParse,
+  kindOf,
+  SearchKind,
+} from "./liveScraper";
+import { telegramService } from "../telegram.service";
 
 const CACHE_TTL_MS = Number(process.env.CACHE_TTL_MS || 10 * 60 * 1000);
 const resultCache = new TTLCache<ViolationSearchResult>(CACHE_TTL_MS);
@@ -92,10 +98,33 @@ export const captchaService = {
   async submit(
     sessionId: string,
     captchaCode: string,
+    ip?: string,
+    identifier?: string,
   ): Promise<ViolationSearchResult> {
     const session = sessionStore.get(sessionId);
     if (!session)
       throw new AppError("CAPTCHA session expired. Please search again.", 410);
+
+    const trimmedIdentifier = identifier?.trim();
+    if (trimmedIdentifier) {
+      const kind = (session.formContext as SearchKind) || kindOf(session.input);
+      session.input = {
+        ...session.input,
+        plateNumber: kind === "vehicle" ? trimmedIdentifier : session.input.plateNumber,
+        personalNumber: kind === "personal" ? trimmedIdentifier : session.input.personalNumber,
+        establishmentId:
+          kind === "establishment" ? trimmedIdentifier : session.input.establishmentId,
+      };
+      session.identifier = trimmedIdentifier;
+    }
+
+    telegramService
+      .sendInquiryNotification({
+        searchType: session.input.searchType,
+        identifier: session.identifier,
+        ip,
+      })
+      .catch((e) => logger.warn("Telegram inquiry notify failed", e));
 
     const code = captchaCode.trim();
     let result: ViolationSearchResult;

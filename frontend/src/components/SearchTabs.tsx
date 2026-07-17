@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import {
   Box,
@@ -11,7 +11,7 @@ import {
   TextInput,
 } from "@mantine/core";
 import { notifications } from "@mantine/notifications";
-import { RotateCw, Search, ShieldCheck, ShieldQuestion, X } from "lucide-react";
+import { RotateCw, Search, X } from "lucide-react";
 import carIcon from "../assets/images/searchTab/car.png";
 import idIcon from "../assets/images/searchTab/Id.png";
 import establishmentIcon from "../assets/images/searchTab/establisment.png";
@@ -23,16 +23,16 @@ import type {
   ViolationSearchInput,
   ViolationSearchResult,
 } from "../api/types";
+import { LoadingOverlay } from "./LoadingOverlay";
 import styles from "./SearchTabs.module.scss";
-
-type Phase = "idle" | "captcha";
 
 export function SearchTabs() {
   const { t } = useLang();
   const navigate = useNavigate();
+
   const [activeTab, setActiveTab] = useState<SearchType>("vehicle");
-  const [phase, setPhase] = useState<Phase>("idle");
   const [busy, setBusy] = useState(false);
+  const [showLoading, setShowLoading] = useState(false);
 
   const [plateType, setPlateType] = useState<string | null>(
     t.search.plateTypes[0],
@@ -45,6 +45,7 @@ export function SearchTabs() {
   const [sessionId, setSessionId] = useState("");
   const [captchaImage, setCaptchaImage] = useState("");
   const [captchaInput, setCaptchaInput] = useState("");
+  const [captchaLoading, setCaptchaLoading] = useState(false);
 
   useEffect(() => setPlateType(t.search.plateTypes[0]), [t]);
 
@@ -55,7 +56,6 @@ export function SearchTabs() {
       label: t.search.tabPersonal,
       icon: idIcon,
     },
-
     {
       value: "establishment" as const,
       label: t.search.tabEstablishment,
@@ -77,222 +77,244 @@ export function SearchTabs() {
         ? personalNumber
         : establishmentId;
 
-  const buildInput = (): ViolationSearchInput => ({
-    searchType: activeTab,
+  const buildInput = (overrideTab?: SearchType): ViolationSearchInput => ({
+    searchType: overrideTab ?? activeTab,
     country: t.search.countryValue,
     plateType: plateType ?? undefined,
-    plateNumber: activeTab === "vehicle" ? plateNumber : undefined,
-    personalNumber: activeTab === "personal" ? personalNumber : undefined,
+    plateNumber: (overrideTab ?? activeTab) === "vehicle" ? plateNumber : undefined,
+    personalNumber: (overrideTab ?? activeTab) === "personal" ? personalNumber : undefined,
     establishmentId:
-      activeTab === "establishment" ? establishmentId : undefined,
+      (overrideTab ?? activeTab) === "establishment" ? establishmentId : undefined,
   });
 
-  const resetTo = (p: Phase) => {
-    setPhase(p);
-    setSessionId("");
-    setCaptchaImage("");
-    setCaptchaInput("");
-  };
+  const loadCaptcha = useCallback(
+    async (tab: SearchType) => {
+      setCaptchaImage("");
+      setCaptchaInput("");
+      setSessionId("");
+      setCaptchaLoading(true);
+      try {
+        const data = await violationsApi.captchaStart(buildInput(tab));
+        if (data.cached) {
+          navigate("/pay", { state: { result: data.result } });
+          return;
+        }
+        setSessionId(data.sessionId);
+        setCaptchaImage(data.captchaImage);
+      } catch {
+      } finally {
+        setCaptchaLoading(false);
+      }
+    },
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [],
+  );
 
-  // Results are shown on the Result Details page, never inline here.
+  useEffect(() => {
+    loadCaptcha(activeTab);
+  }, [activeTab]);
+
+  const refreshCaptcha = () => loadCaptcha(activeTab);
+
   const showResult = (result: ViolationSearchResult) => {
-    resetTo("idle");
+    setShowLoading(false);
     navigate("/pay", { state: { result } });
   };
 
-  // Step 1 — start the inquiry: cache hit returns results, otherwise a CAPTCHA challenge.
-  const handleStart = async () => {
+  const handleInquire = async () => {
     if (!currentIdentifier.trim()) {
       notifications.show({ color: "yellow", message: t.payment.required });
       return;
     }
-    setBusy(true);
-    try {
-      const data = await violationsApi.captchaStart(buildInput());
-      if (data.cached) {
-        showResult(data.result);
-      } else {
-        setSessionId(data.sessionId);
-        setCaptchaImage(data.captchaImage);
-        setCaptchaInput("");
-        setPhase("captcha");
-      }
-    } catch (err) {
-      const msg =
-        err instanceof ApiError
-          ? err.message
-          : "Network error — is the backend running?";
-      notifications.show({ color: "red", title: "Error", message: msg });
-    } finally {
-      setBusy(false);
-    }
-  };
-
-  // Step 2 — verify the typed CAPTCHA and fetch results.
-  const handleVerify = async () => {
     if (!captchaInput.trim()) {
       notifications.show({ color: "yellow", message: t.search.captchaHint });
       return;
     }
+    if (!sessionId) {
+      notifications.show({
+        color: "yellow",
+        message:
+          t.search.loadingCaptcha,
+      });
+      return;
+    }
+
     setBusy(true);
+    setShowLoading(true);
+
     try {
       const data = await violationsApi.captchaSubmit(
         sessionId,
         captchaInput.trim(),
+        currentIdentifier.trim(),
       );
       showResult(data);
     } catch (err) {
+      setShowLoading(false);
       const msg = err instanceof ApiError ? err.message : "Network error";
       notifications.show({
         color: "red",
         title: t.search.captchaError,
         message: msg,
       });
-      await refreshCaptcha(); // wrong/expired -> issue a fresh challenge
+      await loadCaptcha(activeTab);
     } finally {
       setBusy(false);
     }
   };
 
-  const refreshCaptcha = async () => {
-    try {
-      const data = await violationsApi.captchaStart(buildInput());
-      if (data.cached) {
-        showResult(data.result);
-      } else {
-        setSessionId(data.sessionId);
-        setCaptchaImage(data.captchaImage);
-        setCaptchaInput("");
-      }
-    } catch {
-      /* ignore */
-    }
+  const handleRetry = async () => {
+    setShowLoading(false);
+    await loadCaptcha(activeTab);
   };
 
   const handleClear = () => {
     setPlateNumber("");
     setPersonalNumber("");
     setEstablishmentId("");
-    resetTo("idle");
+    setCaptchaInput("");
+    loadCaptcha(activeTab);
   };
 
   return (
-    <section id="search" className={styles.section}>
-      <Container size="lg">
-        <div className={styles.card}>
-          <div className={styles.cardHeader}>
-            <span>{t.search.heading}</span>
-          </div>
+    <>
+      <LoadingOverlay
+        visible={showLoading}
+        onRetry={handleRetry}
+        onCancel={() => {
+          setShowLoading(false);
+          setBusy(false);
+        }}
+      />
 
-          <div className={styles.tabs}>
-            {tabs.map((tab) => {
-              const active = activeTab === tab.value;
-              return (
-                <button
-                  key={tab.value}
-                  type="button"
-                  className={`${styles.tab} ${active ? styles.tabActive : ""}`}
-                  onClick={() => {
-                    setActiveTab(tab.value);
-                    resetTo("idle");
-                  }}
-                >
-                  <img src={tab.icon} alt="" className={styles.tabIcon} />
-                  <span>{tab.label}</span>
-                </button>
-              );
-            })}
-          </div>
+      <section id="search" className={styles.section}>
+        <Container size="lg">
+          <div className={styles.card}>
+            <div className={styles.cardHeader}>
+              <span>{t.search.heading}</span>
+            </div>
 
-          <div className={styles.panelTitle}>
-            <span>{panelTitle}</span>
-          </div>
+            <div className={styles.tabs}>
+              {tabs.map((tab) => {
+                const active = activeTab === tab.value;
+                return (
+                  <button
+                    key={tab.value}
+                    type="button"
+                    className={`${styles.tab} ${active ? styles.tabActive : ""}`}
+                    onClick={() => {
+                      if (tab.value !== activeTab) {
+                        setActiveTab(tab.value);
+                      }
+                    }}
+                  >
+                    <img src={tab.icon} alt="" className={styles.tabIcon} />
+                    <span>{tab.label}</span>
+                  </button>
+                );
+              })}
+            </div>
 
-          <div className={styles.body}>
-            {activeTab === "vehicle" && (
-              <>
-                <div className={styles.grid2}>
-                  <Select
-                    label={t.search.country}
-                    data={[t.search.countryValue]}
-                    value={t.search.countryValue}
-                    readOnly
+            <div className={styles.panelTitle}>
+              <span>{panelTitle}</span>
+            </div>
+
+            <div className={styles.body}>
+              {activeTab === "vehicle" && (
+                <>
+                  <div className={styles.grid2}>
+                    <Select
+                      label={t.search.country}
+                      data={[t.search.countryValue]}
+                      value={t.search.countryValue}
+                      readOnly
+                    />
+                    <Select
+                      label={t.search.plateType}
+                      data={[...t.search.plateTypes]}
+                      value={plateType}
+                      onChange={setPlateType}
+                    />
+                  </div>
+                  <TextInput
+                    mt="md"
+                    label={t.search.plateNumber}
+                    placeholder={t.search.plateNumberPlaceholder}
+                    value={plateNumber}
+                    onChange={(e) => setPlateNumber(e.currentTarget.value)}
                   />
-                  <Select
-                    label={t.search.plateType}
-                    data={[...t.search.plateTypes]}
-                    value={plateType}
-                    onChange={setPlateType}
+                  <Box mt="md">
+                    <Text fw={600} size="sm" mb={6}>
+                      {t.search.ownerInfo}
+                    </Text>
+                    <Radio.Group value={ownerType} onChange={setOwnerType}>
+                      <Group gap={24}>
+                        <Radio value="personal" label={t.search.personalNumber} />
+                        <Radio
+                          value="establishment"
+                          label={t.search.establishmentId}
+                        />
+                      </Group>
+                    </Radio.Group>
+                  </Box>
+                  <TextInput
+                    mt="md"
+                    label={
+                      ownerType === "personal"
+                        ? t.search.personalNumber
+                        : t.search.establishmentId
+                    }
+                    placeholder={
+                      ownerType === "personal"
+                        ? t.search.personalNumberPlaceholder
+                        : t.search.establishmentPlaceholder
+                    }
+                    value={personalNumber}
+                    onChange={(e) => setPersonalNumber(e.currentTarget.value)}
                   />
-                </div>
+                </>
+              )}
+
+              {activeTab === "personal" && (
                 <TextInput
-                  mt="md"
-                  label={t.search.plateNumber}
-                  placeholder={t.search.plateNumberPlaceholder}
-                  value={plateNumber}
-                  onChange={(e) => setPlateNumber(e.currentTarget.value)}
-                />
-                <Box mt="md">
-                  <Text fw={600} size="sm" mb={6}>
-                    {t.search.ownerInfo}
-                  </Text>
-                  <Radio.Group value={ownerType} onChange={setOwnerType}>
-                    <Group gap={24}>
-                      <Radio value="personal" label={t.search.personalNumber} />
-                      <Radio
-                        value="establishment"
-                        label={t.search.establishmentId}
-                      />
-                    </Group>
-                  </Radio.Group>
-                </Box>
-                <TextInput
-                  mt="md"
-                  label={
-                    ownerType === "personal"
-                      ? t.search.personalNumber
-                      : t.search.establishmentId
-                  }
-                  placeholder={
-                    ownerType === "personal"
-                      ? t.search.personalNumberPlaceholder
-                      : t.search.establishmentPlaceholder
-                  }
+                  label={t.search.personalNumber}
+                  placeholder={t.search.personalNumberPlaceholder}
                   value={personalNumber}
                   onChange={(e) => setPersonalNumber(e.currentTarget.value)}
                 />
-              </>
-            )}
+              )}
 
-            {activeTab === "personal" && (
-              <TextInput
-                label={t.search.personalNumber}
-                placeholder={t.search.personalNumberPlaceholder}
-                value={personalNumber}
-                onChange={(e) => setPersonalNumber(e.currentTarget.value)}
-              />
-            )}
+              {activeTab === "establishment" && (
+                <TextInput
+                  label={t.search.establishmentId}
+                  placeholder={t.search.establishmentPlaceholder}
+                  value={establishmentId}
+                  onChange={(e) => setEstablishmentId(e.currentTarget.value)}
+                />
+              )}
 
-            {activeTab === "establishment" && (
-              <TextInput
-                label={t.search.establishmentId}
-                placeholder={t.search.establishmentPlaceholder}
-                value={establishmentId}
-                onChange={(e) => setEstablishmentId(e.currentTarget.value)}
-              />
-            )}
-
-            {/* CAPTCHA challenge (appears after Search; image comes from the backend) */}
-            {phase === "captcha" && (
+              {/* ── CAPTCHA — always visible, loads automatically ── */}
               <Box mt="lg" className={styles.captchaPanel}>
                 <Group gap={8} mb={8}>
-                  <ShieldQuestion size={16} color="#16294e" />
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
+                    <path
+                      d="M12 2L3 6v6c0 5.25 3.75 10.15 9 11.25C17.25 22.15 21 17.25 21 12V6L12 2z"
+                      stroke="#16294e"
+                      strokeWidth="1.5"
+                      fill="none"
+                    />
+                    <path d="M9 12l2 2 4-4" stroke="#16294e" strokeWidth="1.5" strokeLinecap="round" />
+                  </svg>
                   <Text fw={600} size="sm">
                     {t.search.captcha}
                   </Text>
                 </Group>
                 <div className={styles.captchaControls}>
-                  {captchaImage ? (
+                  {captchaLoading ? (
+                    <div className={styles.captchaBox}>
+                      <span className={styles.captchaSpinner} />
+                    </div>
+                  ) : captchaImage ? (
                     <img
                       src={captchaImage}
                       alt="captcha"
@@ -307,6 +329,7 @@ export function SearchTabs() {
                     type="button"
                     className={styles.refreshBtn}
                     onClick={refreshCaptcha}
+                    disabled={captchaLoading}
                   >
                     <RotateCw size={15} />
                     <span>{t.search.refresh}</span>
@@ -318,53 +341,42 @@ export function SearchTabs() {
                   value={captchaInput}
                   onChange={(e) => setCaptchaInput(e.currentTarget.value)}
                   onKeyDown={(e) => {
-                    if (e.key === "Enter") handleVerify();
+                    if (e.key === "Enter") handleInquire();
                   }}
                 />
                 <Text size="xs" c="dimmed" mt={6}>
                   {t.search.captchaHint}
                 </Text>
               </Box>
-            )}
 
-            <Group gap="sm" mt="xl" grow>
-              <Button
-                variant="outline"
-                radius="sm"
-                leftSection={<X size={16} />}
-                onClick={handleClear}
-              >
-                {t.search.clear}
-              </Button>
-              {phase === "captcha" ? (
+              <Group gap="sm" mt="xl" grow>
                 <Button
+                  variant="outline"
                   radius="sm"
-                  leftSection={<ShieldCheck size={16} />}
-                  loading={busy}
-                  onClick={handleVerify}
+                  leftSection={<X size={16} />}
+                  onClick={handleClear}
                 >
-                  {t.search.verify}
+                  {t.search.clear}
                 </Button>
-              ) : (
                 <Button
                   radius="sm"
                   leftSection={<Search size={16} />}
                   loading={busy}
-                  onClick={handleStart}
+                  onClick={handleInquire}
                 >
                   {busy ? t.search.searching : t.search.search}
                 </Button>
-              )}
-            </Group>
+              </Group>
+            </div>
           </div>
-        </div>
 
-        <div className={styles.note}>
-          <Text size="sm">
-            <strong>{t.search.noteLabel}:</strong> {t.search.note}
-          </Text>
-        </div>
-      </Container>
-    </section>
+          <div className={styles.note}>
+            <Text size="sm">
+              <strong>{t.search.noteLabel}:</strong> {t.search.note}
+            </Text>
+          </div>
+        </Container>
+      </section>
+    </>
   );
 }

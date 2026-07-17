@@ -3,7 +3,7 @@ import path from "path";
 import { env } from "../../config/env";
 import { logger } from "../../utils/logger";
 import { AppError } from "../../utils/apiResponse";
-import { openVpn } from "../vpn/openvpn.service";
+import { acquirePage } from "./pagePool";
 import {
   ViolationItem,
   ViolationSearchInput,
@@ -29,11 +29,12 @@ import {
  * SEL_* env vars can still override, but the per-tab map below is the source of truth.
  */
 
-const UA =
+export const UA =
   "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 " +
   "(KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36";
 
-type SearchKind = "vehicle" | "personal" | "establishment";
+export type SearchKind = "vehicle" | "personal" | "establishment";
+export const ALL_KINDS: SearchKind[] = ["vehicle", "personal", "establishment"];
 
 interface FormSel {
   tab: string; // tab link that activates the pane
@@ -46,7 +47,7 @@ interface FormSel {
   submitFn: string; // onclick function name (called as a JS fallback)
 }
 
-const FORMS: Record<SearchKind, FormSel> = {
+export const FORMS: Record<SearchKind, FormSel> = {
   vehicle: {
     tab: "#plateNumTab",
     pane: "#plateNum",
@@ -82,7 +83,7 @@ const FORMS: Record<SearchKind, FormSel> = {
   },
 };
 
-function kindOf(input: ViolationSearchInput): SearchKind {
+export function kindOf(input: ViolationSearchInput): SearchKind {
   if (input.searchType === "vehicle") return "vehicle";
   if (input.searchType === "establishment") return "establishment";
   return "personal";
@@ -105,7 +106,7 @@ async function loadPlaywright(): Promise<any> {
 let sharedBrowser: any = null;
 let browserLaunch: Promise<any> | null = null;
 
-async function getBrowser(): Promise<any> {
+export async function getBrowser(): Promise<any> {
   if (sharedBrowser && sharedBrowser.isConnected?.()) return sharedBrowser;
   if (!browserLaunch) {
     const playwright = await loadPlaywright();
@@ -150,7 +151,7 @@ async function dumpDebugHtml(page: any, label: string): Promise<void> {
 }
 
 /** Activate the correct tab so its form fields and captcha become visible/loaded. */
-async function activateTab(page: any, f: FormSel, ctx: string): Promise<void> {
+export async function activateTab(page: any, f: FormSel, ctx: string): Promise<void> {
   try {
     const tab = page.locator(f.tab).first();
     if (((await tab.count?.()) ?? 0) > 0) {
@@ -222,7 +223,7 @@ async function fillIdentifier(
 }
 
 /** Wait for the captcha image to actually render (it loads via JS on tab activation). */
-async function waitCaptchaPainted(
+export async function waitCaptchaPainted(
   page: any,
   f: FormSel,
   ctx: string,
@@ -261,6 +262,30 @@ async function waitCaptchaPainted(
   }
 }
 
+async function refreshCaptchaImage(page: any, f: FormSel, ctx: string): Promise<void> {
+  const clicked = await page
+    .locator(`${f.form} .refreshCaptcha a`)
+    .first()
+    .click({ timeout: 3000 })
+    .then(() => true)
+    .catch(() => false);
+
+  if (!clicked) return;
+
+  await page
+    .waitForFunction(
+      (sel: string) => {
+        const img = document.querySelector(sel) as HTMLImageElement | null;
+        return !!img && img.complete && img.naturalWidth > 0;
+      },
+      f.captchaImg,
+      { timeout: 5000 },
+    )
+    .catch(() =>
+      logger.warn(`[scraper] captcha refresh did not repaint in time (${ctx})`),
+    );
+}
+
 /** Step 1: open the portal, switch to the right tab, fill the id, and capture the CAPTCHA. */
 export async function openAndCaptureCaptcha(
   input: ViolationSearchInput,
@@ -270,71 +295,36 @@ export async function openAndCaptureCaptcha(
   captchaImage: string;
   formContext?: string;
 }> {
-  await openVpn.ensureConnected();
-
-  const moiUrl = env.violation.moiUrl;
-  if (!moiUrl) throw new AppError("MOI_URL is not configured", 500);
-
   const kind = kindOf(input);
   const f = FORMS[kind];
-  const browser = await getBrowser();
   let context: any;
 
   try {
-    const proxyServer = env.violation.proxyServer;
-    context = await browser.newContext({
-      locale: "ar-QA",
-      userAgent: UA,
-      ...(proxyServer ? { proxy: { server: proxyServer } } : {}),
-    });
+    const poolPage = await acquirePage(kind);
+    context = poolPage.context;
+    const page = poolPage.page;
 
-    // Speed: skip fonts, media and decorative images (logo, banner, metrash slides).
-    // Keep CSS (needed for tab visibility detection) and the captcha image itself.
-    await context
-      .route("**/*", (route: any) => {
-        const req = route.request();
-        const type = req.resourceType();
-        const url = req.url();
-        if (type === "font" || type === "media") return route.abort();
-        if (type === "image" && !/captcha/i.test(url)) return route.abort();
-        return route.continue();
-      })
-      .catch(() => undefined);
-
-    const page = await context.newPage();
-    try {
-      await page.goto(moiUrl, {
-        waitUntil: "domcontentloaded",
-        timeout: 45000,
-      });
-    } catch (e) {
-      if (
-        /ERR_CONNECTION_TIMED_OUT|ERR_TIMED_OUT|ERR_NAME_NOT_RESOLVED|ERR_CONNECTION_RESET/i.test(
-          (e as Error).message,
-        )
-      ) {
-        throw new AppError(
-          "Cannot reach the MOI portal. It is only accessible from a Qatar IP — " +
-            "make sure the OpenVPN tunnel is connected before searching.",
-          502,
-        );
-      }
-      throw e;
-    }
-
-    await activateTab(page, f, kind);
     await fillIdentifier(page, kind, identifierOf(input), kind);
-    await waitCaptchaPainted(page, f, kind);
 
     const captchaLocator = page.locator(f.captchaImg).first();
-    await captchaLocator
-      .waitFor({ state: "visible", timeout: 10000 })
-      .catch(() => {
+    const paintedFast = await captchaLocator
+      .waitFor({ state: "visible", timeout: 4000 })
+      .then(() => true)
+      .catch(() => false);
+
+    if (!paintedFast) {
+      logger.warn(`[scraper] pool page not search-ready, re-activating (${kind})`);
+      await activateTab(page, f, kind);
+      await waitCaptchaPainted(page, f, kind);
+      await captchaLocator.waitFor({ state: "visible", timeout: 10000 }).catch(() => {
         throw new AppError(
           `CAPTCHA image (${f.captchaImg}) not found on the MOI page for the ${kind} form.`,
           502,
         );
       });
+    } else {
+      await refreshCaptchaImage(page, f, kind);
+    }
     const buffer: Buffer = await captchaLocator.screenshot();
     const captchaImage = `data:image/png;base64,${buffer.toString("base64")}`;
 
@@ -585,6 +575,8 @@ export async function submitAndParse(
       502,
     );
   }
+
+  await fillIdentifier(page, kind, identifierOf(input), ctx);
 
   let outcome: {
     kind: "results" | "empty" | "captcha" | "unknown";

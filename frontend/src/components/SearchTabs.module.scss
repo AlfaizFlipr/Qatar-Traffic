@@ -163,6 +163,20 @@
   user-select: none;
 }
 
+.captchaSpinner {
+  display: inline-block;
+  width: 18px;
+  height: 18px;
+  border: 2px solid #dae2e8;
+  border-top-color: #164b6b;
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
 /* refreshCaptcha link */
 .refreshBtn {
   display: inline-flex;
